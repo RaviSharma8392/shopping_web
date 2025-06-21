@@ -137,7 +137,7 @@ const response = await axios.get(`${api}/item/type/${type}`);
       </div>
         <h1 className='font-bold whitespace-nowrap mx-22   md:my-3.5 md:text-2xl  '>Recommended for You</h1>
 
-      <GetItems  items={typeItem}/>
+      <ItemComm  items={typeItem}/>
     </div>
   );
 };

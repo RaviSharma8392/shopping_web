@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 
 
-const GetItems = ({ items }) => {
+const ItemComp = ({ items }) => {
 
  
     
@@ -54,4 +54,4 @@ const GetItems = ({ items }) => {
   )
 }
 
-export default GetItems
+export default ItemComp
