@@ -9,8 +9,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 import {HashLoader} from 'react-spinners';
 import {api} from '../config/config'
-import GetItems from './Item';
-
+import ItemComm from "./ItemComp"
 
 const ItemDetails = () => {
   console.log(api)
