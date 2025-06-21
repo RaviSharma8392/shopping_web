@@ -8,7 +8,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: 'https://clothing-web-xb3m.onrender.com',
+  origin: 'https://frontendcloth.netlify.app/',
   methods: ['GET', 'POST'],
   credentials: true
 }));
