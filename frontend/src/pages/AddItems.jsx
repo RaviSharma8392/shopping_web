@@ -30,7 +30,7 @@ const AddItem=() =>{
       // console.log(form.additionalImages.split(",").map(img=>img.trim()))
       // console.log(form.additionalImages.split(",").map(img=>img.trim()).filter(img=>img))
 try {
-      const res = await axios.post('${api}/item/add',payload )
+      const res = await axios.post(`${api}/item/add`,payload )
       alert("✅" +res.data.message)
 
   
