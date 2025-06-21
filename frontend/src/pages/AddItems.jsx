@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import {api} from "../config/config"
+
 
 const AddItem=() =>{
   const [form, setForm] = useState({
@@ -28,7 +30,7 @@ const AddItem=() =>{
       // console.log(form.additionalImages.split(",").map(img=>img.trim()))
       // console.log(form.additionalImages.split(",").map(img=>img.trim()).filter(img=>img))
 try {
-      const res = await axios.post('http://localhost:3000/api/v1/item/add',payload )
+      const res = await axios.post('${api}/item/add',payload )
       alert("✅" +res.data.message)
 
   
