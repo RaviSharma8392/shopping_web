@@ -8,10 +8,9 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: 'https://frontendcloth.netlify.app/',
-  methods: ['GET', 'POST'],
-  credentials: true
+  origin: "*"
 }));
+
 app.use("/api",router)
 
 const connectServer = async () => {
