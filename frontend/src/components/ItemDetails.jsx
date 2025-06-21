@@ -8,8 +8,8 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 import {HashLoader} from 'react-spinners';
-import Item from './item';
 import {api} from '../config/config'
+import GetItems from './Item';
 
 
 const ItemDetails = () => {
@@ -138,7 +138,7 @@ const response = await axios.get(`${api}/item/type/${type}`);
       </div>
         <h1 className='font-bold whitespace-nowrap mx-22   md:my-3.5 md:text-2xl  '>Recommended for You</h1>
 
-      <Item  items={typeItem}/>
+      <GetItems  items={typeItem}/>
     </div>
   );
 };

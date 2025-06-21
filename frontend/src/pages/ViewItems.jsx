@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import Item from "../components/item";
+import GetItems from "../components/Item";
 import { HashLoader } from "react-spinners";
 import { NavLink } from "react-router-dom";
 import {api} from "../config/config"
 const ViewItems = () => {
   const [items, setItems] = useState([]);
-  console.log(api)
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -29,7 +28,7 @@ const ViewItems = () => {
        <div className='bg-blue-500  text-white font-bold flex justify-end  p-5.5'>
         <NavLink to={"/additem"} className=" bg-orange-500 text-white rounded px-3 py-2  ">Manage Items</NavLink>
       </div>
-      <Item items={items}/>
+      <GetItems items={items}/>
 
       
 

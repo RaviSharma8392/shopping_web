@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 
 
-const Item = ({ items }) => {
+const GetItems = ({ items }) => {
 
  
     
@@ -44,7 +44,6 @@ const Item = ({ items }) => {
 >
  View Details
 </a>
-{/* <Link to={`/item/${item._id}/${item.name}/${item.type}`}>View Details</Link> */}
                 </button>
               </div>
             </div>
@@ -55,4 +54,4 @@ const Item = ({ items }) => {
   )
 }
 
-export default Item
+export default GetItems
