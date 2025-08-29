@@ -1,17 +1,44 @@
 const { StatusCodes } = require("http-status-codes");
-const validateItem = require("../../service/item-validator");
-const Item = require("../../schema/items");
-const { sendEmail } = require('../../config/nodemailer-config');
+const validateItem = require("../service/item-validator");
+const Item = require("../schema/items");
+const { sendEmail } = require('../config/nodemailer-config');
+const category = require("../schema/category");
 
 // Create Item
 const createItem = async (req, res) => {
   try {
     const data = req.body;
-    
+
+    // Validate incoming data
     const filterData = await validateItem(data);
 
-    const { name, type, description, coverImage, additionalImages } = filterData;
-    const newItem = new Item({ name, type, description, coverImage, additionalImages });
+    // Destructure validated fields
+    const { name, category, description, coverImage, additionalImages, price } = filterData;
+
+    // Ensure category is provided
+    if (!category) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        error: "Category is required",
+      });
+    }
+
+    // Ensure price is an array of objects with positive numbers
+    const validPrice = Array.isArray(price)
+      ? price.map((p) => ({
+          unit: p.unit.trim(),
+          price: Number(p.price),
+        }))
+      : [];
+
+    const newItem = new Item({
+      name,
+      category, // Make sure category is included
+      description,
+      coverImage,
+      additionalImages: Array.isArray(additionalImages) ? additionalImages : [],
+      price: validPrice,
+    });
 
     await newItem.save();
 
@@ -29,22 +56,50 @@ const createItem = async (req, res) => {
   }
 };
 
+
 // Get all items
-const getItems = async (req, res) => {
+const getItems= async (req, res) => {
   try {
-    const items = await Item.find();
+    // Fetch all items
+    const items = await Item.find()
+
+    // Fetch all categories
+    const categories = await category.find();
+
     res.status(StatusCodes.OK).json({
       success: true,
-      message: "Successfully fetched items",
-      data: items,
+      message: "Successfully fetched items and categories",
+      data: {
+        items,
+        categories,
+      },
     });
   } catch (error) {
+    console.error(error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
       error: "Something went wrong",
     });
   }
 };
+
+
+const bestSellers = async (req, res) => {
+  try {
+    // Only fetch active best sellers
+    const bestSellers = await Item.find({ isBestSeller: true, isActive: true });
+
+    console.log("Best Sellers fetched:", bestSellers.length);
+    res.status(200).json({ success: true, items: bestSellers });
+  } catch (error) {
+    console.error("Best Sellers Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+
+
+
 
 // Get item by ID
 const getItemsByID = async (req, res) => {
@@ -68,30 +123,30 @@ const getItemsByID = async (req, res) => {
     });
   }
 };
-const getItemsByType = async (req, res) => {
+const getItemsByCategory = async (req, res) => {
   try {
-    const { type } = req.params;
-    const items = await Item.find({ type });
-    // console.log(items)
-    console.log("called in getItemsByType")
-    console.log(type)
+    const { category } = req.params;
+
+    // Find items that match the category ID
+    const items = await Item.find({ category });
 
     if (!items.length) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
-        error: "No items found for this type",
+        error: "No items found for this category",
       });
     }
 
     res.status(StatusCodes.OK).json({
       success: true,
-      message: "Successfully fetched items by type",
+      message: "Successfully fetched items by category",
       data: items,
     });
   } catch (error) {
+    console.error("Error fetching items by category:", error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
-      error: "Something went wrong",
+      error: "Something went wrong while fetching items",
     });
   }
 };
@@ -128,5 +183,5 @@ module.exports = {
   createItem,
   getItems,
   getItemsByID,
-  sendEmailUser,getItemsByType
+  sendEmailUser,getItemsByCategory,bestSellers
 };
