@@ -16,7 +16,6 @@ const CategoryWithItems = ({ category }) => {
 
   // Handle item click to navigate to details page
   const handleDetailClick = (item) => {
-    // Create URL-friendly slugs
     const nameSlug = item.name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
@@ -32,28 +31,20 @@ const CategoryWithItems = ({ category }) => {
           .replace(/(^-|-$)/g, "")
       : "all";
 
-    // Navigate to the item details page with the specified route structure
     navigate(
       `/item/${item._id}/${nameSlug}/${categorySlug}/${subcategorySlug}`
     );
   };
 
-  // Limit to 4 items on mobile, 10 on desktop for initial view
+  // Limit to 4 items on mobile, 10 on desktop
   const limitedItems = isMobile
     ? category.items.slice(0, 4)
     : category.items.slice(0, 10);
 
   return (
-    <div className="mb-10">
-      <h2 className="text-2xl font-bold mb-4 text-gray-800 flex items-center">
-        {category.image && (
-          <img
-            src={category.image}
-            alt={category.name}
-            className="w-10 h-10 rounded-full mr-2 object-cover border-2 border-white shadow-sm"
-          />
-        )}
-        <span className="capitalize">{category.name}</span>
+    <div className="mb-10 bg-white rounded-2xl shadow-lg shadow-green-100 p-6">
+      <h2 className="text-md font-bold mb-4 text-gray-800 items-center">
+        {category.description}
       </h2>
 
       {category.items.length === 0 ? (
@@ -72,7 +63,7 @@ const CategoryWithItems = ({ category }) => {
               ))}
             </div>
           ) : (
-            // Desktop Horizontal Scrolling Layout (10 products)
+            // Desktop Horizontal Scroll
             <div className="flex space-x-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 pb-3">
               {limitedItems.map((item) => (
                 <div key={item._id} className="flex-shrink-0 w-60">
@@ -85,7 +76,7 @@ const CategoryWithItems = ({ category }) => {
             </div>
           )}
 
-          {/* View All Button (visible if more items exist) */}
+          {/* View All Button */}
           {category.items.length > limitedItems.length && (
             <div className="mt-4 text-center">
               <button

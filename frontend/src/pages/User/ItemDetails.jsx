@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { HashLoader } from "react-spinners";
 import axios from "axios";
-import { api } from "../../config/config";
+import { api } from "../../config";
 import ImageGallery from "../../components/ImageGallery";
 import ProductInfo from "../../components/ProductInfo";
 import RecommendationSection from "../../components/RecommendationSection";

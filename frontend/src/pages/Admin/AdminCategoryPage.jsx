@@ -1,7 +1,7 @@
 // src/pages/Admin/AdminCategoryPage.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { api } from "../../config/config";
+import { api } from "../../config";
 import { PlusCircle, X } from "lucide-react";
 import CategoryForm from "../../components/Form/CategoryForm";
 import Button from "../../components/ui/Buttons/PrimaryButton";

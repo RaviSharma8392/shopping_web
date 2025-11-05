@@ -147,6 +147,13 @@ const CategoryForm = ({
           Add Subcategory
         </button>
       </div>
+      <input
+        type="number"
+        placeholder="Price"
+        value={formData.price}
+        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+        className="w-full border p-2 rounded mb-3"
+      />
 
       {/* Buttons */}
       <div className="flex justify-between mt-4">

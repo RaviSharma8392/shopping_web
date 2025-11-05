@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import RenderStep1 from "../../components/ContactForm/RenderStep1";
 import RenderStep2 from "../../components/ContactForm/RenderStep2";
 import RenderStep3 from "../../components/ContactForm/RenderStep3";
-import { api } from "../../config/config";
+import { api } from "../../config";
 import axios from "axios";
 
 const EnquiryForm = () => {

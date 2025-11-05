@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import axios from "axios";
-import { api } from "../../config/config";
+import { api } from "../../config";
 
 const AccountPage = () => {
   const [user, setUser] = useState(null);

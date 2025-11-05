@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { api } from "../config/config";
+import { api } from "../config";
 
 export const useCategoryData = (categoryId) => {
   const [category, setCategory] = useState(null);

@@ -1,26 +1,10 @@
-import React from "react";
-import AppRoutes from "./routes";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import AdminRoutes from "./admin";
+import UserRoutes from "./user";
 
 const App = () => {
-  return (
-    <>
-      <AppRoutes />
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-    </>
-  );
+  const isAdminPath = window.location.pathname.startsWith("/admin");
+
+  return <>{isAdminPath ? <AdminRoutes /> : <UserRoutes />}</>;
 };
 
 export default App;
