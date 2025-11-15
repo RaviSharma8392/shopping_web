@@ -1,80 +1,103 @@
-import ShareSection from "../components/common/share/ShareSection";
-import { COLORS } from "../../style/theme";
-import ItemCard from "../components/common/cards/ItemCard";
+import React, { useEffect, useState } from "react";
+import { Heart, Trash2 } from "lucide-react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
 
 const WishlistPage = () => {
-  const isLoggedIn = false; // change this based on your auth state
+  const [wishlist, setWishlist] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const auth = getAuth();
+  const db = getFirestore();
 
-  const wishlistItems = [
-    {
-      id: 1,
-      name: "Eirene Lawn Printed Navy Co-ord Set",
-      price: 12950,
-      images: [
-        "https://shopmulmul.com/cdn/shop/files/88_115d8b10-f8dd-4d5d-a07a-5800f127bb85_800x.jpg?v=1755607569",
-      ],
-      selectedSize: "XS",
-    },
-    {
-      id: 2,
-      name: "Aurora Printed Linen Off White Co-ord Set",
-      price: 9950,
-      images: [
-        "https://cdn.shopify.com/s/files/1/0088/4031/4931/files/188_20e089d1-7f04-4cb6-9042-7224655cd1f8.jpg?v=1756538942",
-      ],
-      selectedSize: "S",
-    },
-  ];
+  // Fetch wishlist (Firebase if logged in, else localStorage)
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoading(true);
+
+      if (user) {
+        // ⭐ Fetch From Firebase
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists() && userSnap.data().wishlist) {
+          setWishlist(userSnap.data().wishlist);
+        } else {
+          setWishlist([]);
+        }
+      } else {
+        // ⭐ Fetch From LocalStorage
+        const localData = JSON.parse(localStorage.getItem("wishlist")) || [];
+        setWishlist(localData);
+      }
+
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // ⭐ Remove item from wishlist (local + Firebase synced)
+  const removeItem = async (id) => {
+    const updated = wishlist.filter((item) => item.id !== id);
+    setWishlist(updated);
+
+    const user = auth.currentUser;
+
+    if (user) {
+      await updateDoc(doc(db, "users", user.uid), { wishlist: updated });
+    } else {
+      localStorage.setItem("wishlist", JSON.stringify(updated));
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full h-40 flex items-center justify-center text-lg font-semibold">
+        Loading wishlist...
+      </div>
+    );
+  }
 
   return (
-    <section
-      className="mt-20 min-h-screen w-full px-4 md:px-12 py-12"
-      style={{ background: COLORS.light }}>
-      {/* Page Title */}
-      <h1
-        className="text-center text-3xl md:text-4xl font-playfair font-semibold mb-6"
-        style={{ color: COLORS.textAlt }}>
-        My Wishlist
-      </h1>
+    <div className="max-w-6xl mx-auto px-4 py-10">
+      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+        <Heart size={26} /> Your Wishlist
+      </h2>
 
-      {/* Show Login Reminder ONLY if user ISN’T logged in */}
-      {!isLoggedIn && (
-        <p
-          className="text-center text-sm md:text-base mb-10"
-          style={{ color: COLORS.text }}>
-          To save your wishlist please{" "}
-          <span className="underline cursor-pointer">login</span> or{" "}
-          <span className="underline cursor-pointer">sign up</span>.
-        </p>
+      {/* If empty */}
+      {wishlist.length === 0 ? (
+        <div className="text-center text-gray-500 py-20 text-lg">
+          Your wishlist is empty 🥹
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {wishlist.map((item) => (
+            <div
+              key={item.id}
+              className="border p-4 rounded-xl shadow-sm hover:shadow-md transition relative">
+              <img
+                src={item.image}
+                alt={item.title}
+                className="w-full h-48 object-cover rounded-lg"
+              />
+
+              <h3 className="mt-3 text-lg font-semibold">{item.title}</h3>
+              <p className="text-gray-600 text-sm">{item.category}</p>
+
+              <div className="flex items-center justify-between mt-3">
+                <p className="font-bold text-lg">₹{item.price}</p>
+
+                <button
+                  onClick={() => removeItem(item.id)}
+                  className="p-2 rounded-full hover:bg-red-100">
+                  <Trash2 size={20} className="text-red-500" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
-
-      {/* Show Share component */}
-      <ShareSection />
-
-      {/* Wishlist Items */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {wishlistItems.map((item) => (
-          <div key={item.id}>
-            <ItemCard product={item} />
-
-            {/* Link */}
-            <p
-              className="mt-3 text-sm underline cursor-pointer text-center"
-              style={{ color: COLORS.textAlt }}>
-              Go to product page of: {item.name} in {item.selectedSize} /{" "}
-              {item.selectedSize}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* When wishlist empty */}
-      {wishlistItems.length === 0 && (
-        <p className="text-center text-lg mt-10" style={{ color: COLORS.text }}>
-          Your wishlist is empty.
-        </p>
-      )}
-    </section>
+    </div>
   );
 };
 

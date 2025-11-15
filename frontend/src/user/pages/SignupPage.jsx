@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// import { registerUser } from "../../services/api/authService";
-
-const registerUser = "";
 import { IMAGES } from "../../assets/images";
 import { COLORS } from "../../style/theme";
+import { signupUser } from "../firebase/firebaseauth";
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -25,19 +23,20 @@ const SignupPage = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError("");
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      await registerUser(form);
-      navigate("/account/email-verification");
+      await signupUser(form);
+      navigate("/account/login");
     } catch (err) {
-      setError(err.response?.data?.message || "Signup failed");
-    } finally {
-      setLoading(false);
+      setError(err.message);
     }
+
+    setLoading(false);
   };
 
   return (
@@ -56,7 +55,6 @@ const SignupPage = () => {
       {/* RIGHT FORM */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-10 bg-white">
         <div className="w-full max-w-md">
-          {/* Heading */}
           <h2
             className="text-3xl font-[lora] mb-2 text-center"
             style={{ color: COLORS.primary }}>
@@ -68,7 +66,7 @@ const SignupPage = () => {
             Fill in the details below to get started
           </p>
 
-          {/* Error Box */}
+          {/* Error */}
           {error && (
             <div
               className="p-3 rounded-lg text-sm mb-4"
@@ -77,9 +75,7 @@ const SignupPage = () => {
             </div>
           )}
 
-          {/* Form */}
           <form className="space-y-5" onSubmit={handleSubmit}>
-            {/* Name */}
             <div className="flex gap-4">
               <input
                 name="firstName"
@@ -108,7 +104,6 @@ const SignupPage = () => {
               />
             </div>
 
-            {/* Email */}
             <input
               type="email"
               name="email"
@@ -123,7 +118,6 @@ const SignupPage = () => {
               }}
             />
 
-            {/* Mobile */}
             <input
               type="tel"
               name="mobile"
@@ -139,33 +133,29 @@ const SignupPage = () => {
               }}
             />
 
-            {/* Password */}
-            <div>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Password"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2"
-                  style={{
-                    borderColor: COLORS.secondary,
-                    "--tw-ring-color": COLORS.primary,
-                  }}
-                />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={form.password}
+                onChange={handleChange}
+                required
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2"
+                style={{
+                  borderColor: COLORS.secondary,
+                  "--tw-ring-color": COLORS.primary,
+                }}
+              />
 
-                <button
-                  type="button"
-                  className="absolute right-4 top-3 text-sm text-gray-500"
-                  onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? "Hide" : "Show"}
-                </button>
-              </div>
+              <button
+                type="button"
+                className="absolute right-4 top-3 text-sm text-gray-500"
+                onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? "Hide" : "Show"}
+              </button>
             </div>
 
-            {/* Submit Button */}
             <button
               disabled={loading}
               className="w-full py-3 rounded-lg text-white font-semibold transition"
@@ -177,7 +167,6 @@ const SignupPage = () => {
             </button>
           </form>
 
-          {/* Login Redirect */}
           <p
             className="text-sm text-center mt-4"
             style={{ color: COLORS.text }}>

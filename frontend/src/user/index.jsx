@@ -12,7 +12,7 @@ import UserLayout from "../user/layouts/UserLayout";
 // import AccountPage from "../pages/User/Account";
 
 /* ----------------- AUTH PAGES ----------------- */
-import LoginPage from "./pages/LoginPage";
+// import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 // import AboutUs from "../pages/User/AboutUs";
 // import EmailVerificationNotice from "../user/pages/EmailVerificationNotice";
@@ -21,6 +21,10 @@ import HomePage from "../user/pages/HomePage";
 import AccountPage from "./pages/AccountPage";
 import CollectionPage from "./pages/CollectionsPage";
 import CategoryDetails from "./pages/CategoryDetails";
+import WishlistPage from "./pages/WishlistPage";
+import CartPage from "./pages/CartPage";
+import LoginPage from "./pages/LoginPage";
+import PhoneAuth from "./pages/PhoneAuth";
 // import WishlistPage from "../user/pages/WishlistPage";
 
 /* ----------------- CHECK LOGIN ----------------- */
@@ -37,14 +41,17 @@ const UserRoutes = () => {
         element={<EmailVerificationNotice />}
       /> */}
 
-      <Route path="account/login" element={<LoginPage />} />
+      <Route path="account/login" element={<PhoneAuth />} />
       <Route path="account/register" element={<SignupPage />} />
       <Route path="/" element={<UserLayout />}>
+        <Route path="/cart" element={<CartPage />} />
+
         <Route index element={<HomePage />} />
         <Route path="collections" element={<CollectionPage />} />
         <Route path="/collections/:slug" element={<CategoryDetails />} />
       </Route>
       <Route path="/account" element={<AccountPage />} />
+      <Route path="/wish" element={<WishlistPage />} />
 
       {/*  USER ROUTES (only if logged in) */}
       {/* {user && (

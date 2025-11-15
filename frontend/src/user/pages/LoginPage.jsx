@@ -1,111 +1,158 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import {
-  User,
-  MapPin,
-  Package,
-  CreditCard,
-  Shield,
-  HelpCircle,
-  Star,
-  Truck,
-} from "lucide-react";
-
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { IMAGES } from "../../assets/images";
 import { COLORS } from "../../style/theme";
+import { loginUser } from "../firebase/firebaseauth";
+import { auth } from "../../config/firebase";
 
-const tiles = [
-  {
-    title: "Your Orders",
-    desc: "Track, return, or buy things again",
-    icon: <Package size={32} />,
-    link: "/account/orders",
-  },
-  {
-    title: "Login & Security",
-    desc: "Edit login, name, and mobile number",
-    icon: <User size={32} />,
-    link: "/account/profile",
-  },
-  {
-    title: "Your Addresses",
-    desc: "Edit addresses for orders and gifts",
-    icon: <MapPin size={32} />,
-    link: "/account/address",
-  },
-  {
-    title: "Payment Options",
-    desc: "Edit or add payment methods",
-    icon: <CreditCard size={32} />,
-    link: "/account/payment-methods",
-  },
-  {
-    title: "Amazon Pay Balance",
-    desc: "Add money or check balance",
-    icon: <Shield size={32} />,
-    link: "/account/wallet",
-  },
-  {
-    title: "Prime",
-    desc: "View benefits and payment settings",
-    icon: <Star size={32} />,
-    link: "/account/prime",
-  },
-  {
-    title: "Your Business Account",
-    desc: "Benefits & GST invoice savings",
-    icon: <Truck size={32} />,
-    link: "/account/business",
-  },
-  {
-    title: "Contact Us",
-    desc: "Customer service via phone or chat",
-    icon: <HelpCircle size={32} />,
-    link: "/contact",
-  },
-];
+const LoginPage = () => {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-const AccountPage = () => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      await loginUser(form.email, form.password);
+
+      // Check email verification
+      // if (!auth.currentUser.emailVerified) {
+      //   setError("Please verify your email before logging in.");
+      //   setLoading(false);
+      //   return;
+      // }
+
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message);
+    }
+
+    setLoading(false);
+  };
+
   return (
     <div
-      className="mt-20 min-h-screen px-6"
-      style={{ backgroundColor: COLORS.background }}>
-      <div className="max-w-6xl mx-auto">
-        <h1
-          className="text-3xl font-bold mb-6"
-          style={{ color: COLORS.primary }}>
-          Your Account
-        </h1>
+      className="min-h-screen flex"
+      style={{ fontFamily: "Poppins, sans-serif" }}>
+      {/* LEFT IMAGE */}
+      <div className="hidden md:flex w-1/2">
+        <img
+          src={IMAGES.signupBanner}
+          alt="Login Banner"
+          className="w-full h-full object-cover"
+        />
+      </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tiles.map((tile, i) => (
+      {/* RIGHT FORM */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-10 bg-white">
+        <div className="w-full max-w-md">
+          <h2
+            className="text-3xl font-[lora] mb-2 text-center"
+            style={{ color: COLORS.primary }}>
+            Login
+          </h2>
+
+          <p
+            className="text-sm mb-6 text-center"
+            style={{ color: COLORS.text }}>
+            Enter your email and password to continue
+          </p>
+
+          {/* Error */}
+          {error && (
+            <div
+              className="p-3 rounded-lg text-sm mb-4"
+              style={{ background: COLORS.accent, color: COLORS.primary }}>
+              {error}
+            </div>
+          )}
+
+          {/* FORM */}
+          <form className="space-y-5" onSubmit={handleSubmit}>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email Address"
+              value={form.email}
+              onChange={handleChange}
+              required
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2"
+              style={{
+                borderColor: COLORS.secondary,
+                "--tw-ring-color": COLORS.primary,
+              }}
+            />
+
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={form.password}
+                onChange={handleChange}
+                required
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2"
+                style={{
+                  borderColor: COLORS.secondary,
+                  "--tw-ring-color": COLORS.primary,
+                }}
+              />
+
+              <button
+                type="button"
+                className="absolute right-4 top-3 text-sm text-gray-500"
+                onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+
+            <button
+              disabled={loading}
+              className="w-full py-3 rounded-lg text-white font-semibold transition"
+              style={{
+                background: COLORS.primary,
+                opacity: loading ? 0.7 : 1,
+              }}>
+              {loading ? "Logging in..." : "Login"}
+            </button>
+          </form>
+
+          <p
+            className="text-sm text-center mt-4"
+            style={{ color: COLORS.text }}>
+            Don’t have an account?{" "}
             <Link
-              to={tile.link}
-              key={i}
-              className="p-6 rounded-xl shadow-sm border bg-white hover:shadow-md transition flex items-start gap-4"
-              style={{ borderColor: COLORS.secondary + "40" }}>
-              {/* Icon */}
-              <div
-                className="w-14 h-14 rounded-lg flex items-center justify-center text-white"
-                style={{ backgroundColor: COLORS.primary }}>
-                {tile.icon}
-              </div>
-
-              {/* Text */}
-              <div>
-                <h2
-                  className="text-lg font-semibold"
-                  style={{ color: COLORS.primary }}>
-                  {tile.title}
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">{tile.desc}</p>
-              </div>
+              to="/account/signup"
+              className="font-semibold"
+              style={{ color: COLORS.primary }}>
+              Sign Up
             </Link>
-          ))}
+          </p>
+
+          <p
+            className="text-sm text-center mt-2"
+            style={{ color: COLORS.text }}>
+            <Link
+              to="/account/forgot-password"
+              className="font-semibold"
+              style={{ color: COLORS.primary }}>
+              Forgot Password?
+            </Link>
+          </p>
         </div>
       </div>
     </div>
   );
 };
 
-export default AccountPage;
+export default LoginPage;

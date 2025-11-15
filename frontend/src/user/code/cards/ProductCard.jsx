@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import { Heart, Eye, CarTaxiFront, ShoppingBag } from "lucide-react";
 import ProductQuickView from "../view/ProductQuickView";
+import { addToWishlist } from "../../services/wishlistService";
+import { useWishlist } from "../../hook/useWishlist";
 
 const ProductCard = ({ product }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [openQuickView, setOpenQuickView] = useState(false);
+  const { isLiked, setIsLiked } = useWishlist(product.id);
+  console.log(product);
 
   const images = product.images || [product.image];
   console.log(5 > 1);
@@ -13,9 +17,19 @@ const ProductCard = ({ product }) => {
     <>
       <div className="w-40 md:w-80 h-70 md:h-120 group cursor-pointer relative mb-5 ">
         {/* ❤️ Wishlist Icon */}
-        <button className="absolute top-3 right-3 z-20 bg-white/80 rounded-full p-1 md:p-2 shadow hover:bg-white transition">
-          <Heart size={18} className="text-gray-700" />
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            addToWishlist(product);
+            setIsLiked(true); // instantly update UI
+          }}
+          className="absolute top-3 right-3 z-20 bg-white/80 rounded-full p-1 md:p-2 shadow hover:bg-white transition">
+          <Heart
+            size={18}
+            className={isLiked ? "text-red-500 fill-red-500" : "text-gray-700"}
+          />
         </button>
+
         {/* 🖼 Product Image Slider */}
         <div
           className="relative h-60 md:h-110

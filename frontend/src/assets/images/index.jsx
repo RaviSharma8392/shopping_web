@@ -8,9 +8,14 @@ const loginBanner =
 
 const signupBanner =
   "https://images.meesho.com/images/marketing/1744698265981.webp";
+
+const logo =
+  "https://scontent-bom5-1.xx.fbcdn.net/v/t39.30808-6/534790360_122112053996963156_1792750826024339940_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=111&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=yQGfH9qmELEQ7kNvwGvo_Xu&_nc_oc=AdlbjRDmkETLKGbb--1jpCFJNRHRCkBdOYu0Wz1E9WBIWnehkg9sYdbfKRF306MhOZw&_nc_zt=23&_nc_ht=scontent-bom5-1.xx&_nc_gid=zY2sPDpq_dM8cZsBNKWvcw&oh=00_Afgd_BClucLycWhFjP2tHFDffbgfK5E1xSi-_fDsC2obMg&oe=691E0243";
+
 // Export all in one object
 
 export const IMAGES = {
+  logo,
   loginBanner,
   signupBanner,
   mobileImage,
