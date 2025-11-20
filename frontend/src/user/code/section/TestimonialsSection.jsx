@@ -1,9 +1,10 @@
 import { COLORS } from "../../../style/theme";
 import useTestimonials from "../../hook/useTestimonials";
-import TestimonialCard from "../cards/CategoriesCard";
+import TestimonialCard from "../../../shared/components/TestimonialCard";
 
 const TestimonialsSection = () => {
   const { testimonials, loading } = useTestimonials();
+  console.log(testimonials);
 
   if (loading) {
     return (

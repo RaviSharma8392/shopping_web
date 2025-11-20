@@ -20,65 +20,34 @@ const HeroBanner = () => {
 
   const [index, setIndex] = useState(0);
 
-  // ✅ Auto-slide every 5 seconds
+  // Auto Slide
   useEffect(() => {
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % slides.length);
     }, 5000);
-
     return () => clearInterval(timer);
   }, [slides.length]);
 
   return (
     <div
-      className="relative w-full overflow-hidden"
+      className="relative  w-full overflow-hidden"
       style={{
-        height: isMobile ? "100vh" : "80vh",
+        height: isMobile ? "100vh" : "100vh",
       }}>
-      {/* ✅ Slides */}
+      {/* Slides */}
       {slides.map((img, i) => (
         <img
           key={i}
           src={img}
           alt="Hero Slide"
           className={`
-            absolute inset-0 w-full h-full object-cover 
-            transition-opacity duration-[1500ms] ease-out
+            hero-banner-img
+            absolute inset-0 w-full h-full object-cover md:object-contain
+            transition-opacity duration-[1200ms] ease-out
             ${i === index ? "opacity-100" : "opacity-0"}
           `}
         />
       ))}
-
-      {/* ✅ Dark overlay */}
-      <div className="absolute inset-0 bg-black/40"></div>
-
-      {/* ✅ CTA Centered */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2">
-        <NavLink
-          to="/shop"
-          className="
-            px-7 py-3
-            text-white
-            border border-white
-            rounded-full
-            font-medium tracking-wide
-            hover:bg-white hover:text-black
-            transition duration-300
-          ">
-          Shop Now
-        </NavLink>
-      </div>
-
-      {/* ✅ Smooth subtle zoom animation */}
-      <style>{`
-        img {
-          animation: zoomIn 12s ease-in-out infinite;
-        }
-        @keyframes zoomIn {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.08); }
-        }
-      `}</style>
     </div>
   );
 };

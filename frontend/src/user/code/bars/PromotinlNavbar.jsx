@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { COLORS } from "../../../style/theme";
 
 const PromotionalSlider = ({ items = [], interval = 3000 }) => {
+  // console.log(items);
   const [index, setIndex] = useState(0);
   const timer = useRef(null);
 

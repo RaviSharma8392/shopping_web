@@ -1,184 +1,119 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { IMAGES } from "../../assets/images";
-import { COLORS } from "../../style/theme";
-import { signupUser } from "../firebase/firebaseauth";
+import { useNavigate } from "react-router-dom";
+import { signupUser, googleSignup } from "../firebase/firebaseauth";
+import StepSelectMethod from "../code/steps/StepSelectMethod";
+import StepEmailForm from "../code/steps/StepEmailForm";
+import StepDetailsForm from "../code/steps/StepDetailsForm";
+import StepSuccess from "../code/steps/StepSuccess";
+import { useAuth } from "../context/AuthContext";
 
 const SignupPage = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const [form, setForm] = useState({
+  const [step, setStep] = useState(0);
+  const [signupMethod, setSignupMethod] = useState("email");
+  const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [userInfo, setUserInfo] = useState({
     firstName: "",
     lastName: "",
-    email: "",
-    mobile: "",
     password: "",
+    confirmPassword: "",
   });
-
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setError("");
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
+  // ---------------- GOOGLE SIGNUP ----------------
+  const handleGoogleSignup = async () => {
     try {
-      await signupUser(form);
-      navigate("/account/login");
+      setLoading(true);
+      setSignupMethod("google");
+      setError("");
+
+      const user = await googleSignup();
+      login(user.uid, { ...user, signupMethod: "google" });
+
+      setStep(3);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ---------------- EMAIL SIGNUP FINAL SUBMIT ----------------
+  const handleFinalSubmit = async () => {
+    if (userInfo.password !== userInfo.confirmPassword) {
+      setError("Passwords do not match!");
+      return;
     }
 
-    setLoading(false);
+    try {
+      setLoading(true);
+      setSignupMethod("email");
+      setError("");
+
+      await signupUser({
+        email,
+        password: userInfo.password,
+        firstName: userInfo.firstName,
+        lastName: userInfo.lastName,
+        mobile,
+      });
+
+      setStep(3);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div
-      className="min-h-screen flex"
-      style={{ fontFamily: "Poppins, sans-serif" }}>
-      {/* LEFT IMAGE */}
-      <div className="hidden md:flex w-1/2">
-        <img
-          src={IMAGES.signupBanner}
-          alt="Signup Banner"
-          className="w-full h-full object-cover"
-        />
-      </div>
+    <div className="min-h-screen flex items-center justify-center font-poppins bg-white md:bg-gray-50 p-4">
+      <div className="bg-white md:rounded-2xl md:shadow-2xl w-full max-w-md p-6 md:p-8">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm text-center rounded-lg">
+            {error}
+          </div>
+        )}
 
-      {/* RIGHT FORM */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-10 bg-white">
-        <div className="w-full max-w-md">
-          <h2
-            className="text-3xl font-[lora] mb-2 text-center"
-            style={{ color: COLORS.primary }}>
-            Create an Account
-          </h2>
-          <p
-            className="text-sm mb-6 text-center"
-            style={{ color: COLORS.text }}>
-            Fill in the details below to get started
-          </p>
+        {/* Signup Steps */}
+        {step === 0 && (
+          <StepSelectMethod
+            setStep={setStep}
+            setEmail={setEmail}
+            email={email}
+            setError={setError}
+            onGoogleSignup={handleGoogleSignup}
+            loading={loading}
+          />
+        )}
 
-          {/* Error */}
-          {error && (
-            <div
-              className="p-3 rounded-lg text-sm mb-4"
-              style={{ background: COLORS.accent, color: COLORS.primary }}>
-              {error}
-            </div>
-          )}
+        {step === 1 && (
+          <StepEmailForm
+            email={email}
+            setEmail={setEmail}
+            mobile={mobile}
+            setMobile={setMobile}
+            setStep={setStep}
+            setError={setError}
+          />
+        )}
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <div className="flex gap-4">
-              <input
-                name="firstName"
-                placeholder="First Name"
-                value={form.firstName}
-                onChange={handleChange}
-                required
-                className="w-1/2 p-3 border rounded-lg focus:outline-none focus:ring-2"
-                style={{
-                  borderColor: COLORS.secondary,
-                  "--tw-ring-color": COLORS.primary,
-                }}
-              />
+        {step === 2 && (
+          <StepDetailsForm
+            setStep={setStep}
+            userInfo={userInfo}
+            setUserInfo={setUserInfo}
+            loading={loading}
+            onSubmit={handleFinalSubmit}
+          />
+        )}
 
-              <input
-                name="lastName"
-                placeholder="Last Name"
-                value={form.lastName}
-                onChange={handleChange}
-                required
-                className="w-1/2 p-3 border rounded-lg focus:outline-none focus:ring-2"
-                style={{
-                  borderColor: COLORS.secondary,
-                  "--tw-ring-color": COLORS.primary,
-                }}
-              />
-            </div>
-
-            <input
-              type="email"
-              name="email"
-              placeholder="Email Address"
-              value={form.email}
-              onChange={handleChange}
-              required
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2"
-              style={{
-                borderColor: COLORS.secondary,
-                "--tw-ring-color": COLORS.primary,
-              }}
-            />
-
-            <input
-              type="tel"
-              name="mobile"
-              placeholder="Mobile Number"
-              value={form.mobile}
-              maxLength="10"
-              onChange={handleChange}
-              required
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2"
-              style={{
-                borderColor: COLORS.secondary,
-                "--tw-ring-color": COLORS.primary,
-              }}
-            />
-
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Password"
-                value={form.password}
-                onChange={handleChange}
-                required
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2"
-                style={{
-                  borderColor: COLORS.secondary,
-                  "--tw-ring-color": COLORS.primary,
-                }}
-              />
-
-              <button
-                type="button"
-                className="absolute right-4 top-3 text-sm text-gray-500"
-                onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            </div>
-
-            <button
-              disabled={loading}
-              className="w-full py-3 rounded-lg text-white font-semibold transition"
-              style={{
-                background: COLORS.primary,
-                opacity: loading ? 0.7 : 1,
-              }}>
-              {loading ? "Creating Account..." : "Create Account"}
-            </button>
-          </form>
-
-          <p
-            className="text-sm text-center mt-4"
-            style={{ color: COLORS.text }}>
-            Already have an account?{" "}
-            <Link
-              to="/account/login"
-              className="font-semibold"
-              style={{ color: COLORS.primary }}>
-              Login
-            </Link>
-          </p>
-        </div>
+        {step === 3 && <StepSuccess signupMethod={signupMethod} />}
       </div>
     </div>
   );

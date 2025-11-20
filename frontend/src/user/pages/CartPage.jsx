@@ -1,90 +1,119 @@
+import React, { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
-import { Trash2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import CartItemCard from "../code/cards/CartItemCard";
+import CartControlHeader from "../code/header/CartControlHeader";
+import CheckOutBottomBar from "../code/bars/CheckOutBottomBar";
+import CartSummary from "../code/cartComponents/CartSummary";
+import EmptyCart from "../code/empty/EmptyCart";
 
 const CartPage = () => {
-  const { cart, removeFromCart } = useCart();
-  const navigate = useNavigate();
+  const { cart, loading, update, remove, clear } = useCart();
+  const { isLoggedIn } = useAuth();
 
-  const totalPrice = cart.reduce((sum, item) => {
-    return sum + item.price * (item.qty || 1);
-  }, 0);
+  const [cartItems, setCartItems] = useState([]);
+  const [selectedItems, setSelectedItems] = useState([]);
+
+  useEffect(() => {
+    setCartItems(cart); // sync when server updates
+  }, [cart]);
+
+  // Quantity Change
+  const handleQtyChange = (id, newQty) => {
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, quantity: newQty } : item
+      )
+    );
+    update(id, newQty);
+  };
+
+  // Select / Unselect item
+  const handleSelectItem = (id) => {
+    setSelectedItems((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  // Select all
+  const handleSelectAll = () => {
+    if (selectedItems.length === cartItems.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(cartItems.map((i) => i.id));
+    }
+  };
+
+  // Compute totals of selected items only
+  const selected = cartItems.filter((item) => selectedItems.includes(item.id));
+
+  const totalPrice = selected.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
+
+  const originalTotalPrice = selected.reduce(
+    (acc, item) => acc + item.originalPrice * item.quantity,
+    0
+  );
+
+  if (!isLoggedIn)
+    return (
+      <h2 className="text-center mt-20">Please login to view your cart.</h2>
+    );
+
+  if (loading) return <p className="text-center mt-20">Loading cart...</p>;
+
+  if (cartItems.length === 0) return <EmptyCart />;
 
   return (
-    <div className="max-w-5xl mx-auto p-5 mt-8">
-      <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
+    <div className="max-w-5xl mx-auto py-0.5 md:mt-4 md:py-4 flex flex-col md:flex-row gap-6">
+      {/* Left Items */}
+      <div className="flex-1">
+        <CartControlHeader
+          cartItems={cartItems}
+          selectedItems={selectedItems}
+          onToggleSelect={handleSelectAll}
+          onClearCart={() => {
+            clear();
+            setSelectedItems([]);
+            setCartItems([]);
+          }}
+          totalPrice={totalPrice}
+        />
 
-      {cart.length === 0 ? (
-        <div className="text-center py-20">
-          <h2 className="text-xl font-medium text-gray-600">
-            Your cart is empty 😕
-          </h2>
-          <button
-            onClick={() => navigate("/shop")}
-            className="mt-4 px-6 py-3 bg-black text-white rounded-xl">
-            Start Shopping
-          </button>
-        </div>
-      ) : (
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* LEFT - CART ITEMS */}
-          <div className="md:col-span-2 space-y-4">
-            {cart.map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-4 p-4 border rounded-xl shadow-sm">
-                {/* IMAGE */}
-                <img
-                  src={item.selectedImage || item.image}
-                  alt={item.name}
-                  className="w-24 h-24 object-cover rounded-lg"
-                />
+        {cartItems.map((item) => (
+          <CartItemCard
+            key={item.id}
+            product={item}
+            selected={selectedItems.includes(item.id)}
+            onSelect={() => handleSelectItem(item.id)}
+            onRemove={() => {
+              remove(item.id);
+              setCartItems((prev) => prev.filter((i) => i.id !== item.id));
+              setSelectedItems((prev) => prev.filter((x) => x !== item));
+            }}
+            onQtyChange={(newQty) => handleQtyChange(item.id, newQty)}
+          />
+        ))}
+      </div>
 
-                {/* DETAILS */}
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{item.name}</h3>
-                  <p className="text-pink-600 font-semibold">₹{item.price}</p>
+      {/* Right Sidebar */}
+      <div className="hidden md:block md:w-1/3">
+        <CartSummary
+          subtotal={totalPrice}
+          originalTotalPrice={originalTotalPrice}
+          platformFee={50}
+          selectedItems={selected}
+        />
+      </div>
 
-                  {item.selectedSize && (
-                    <p className="text-sm text-gray-500">
-                      Size: {item.selectedSize}
-                    </p>
-                  )}
-
-                  {item.selectedColor && (
-                    <p className="text-sm text-gray-500">
-                      Color: {item.selectedColor}
-                    </p>
-                  )}
-
-                  <p className="text-sm text-gray-500">Qty: {item.qty}</p>
-                </div>
-
-                {/* DELETE BUTTON */}
-                <button
-                  onClick={() => removeFromCart(item.id)}
-                  className="text-red-500">
-                  <Trash2 size={20} />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* RIGHT - ORDER SUMMARY */}
-          <div className="border p-5 rounded-xl shadow-md h-fit">
-            <h2 className="text-xl font-bold mb-4">Order Summary</h2>
-
-            <div className="flex justify-between text-lg font-medium">
-              <span>Total:</span>
-              <span>₹{totalPrice}</span>
-            </div>
-
-            <button className="mt-5 w-full bg-black text-white py-3 rounded-xl font-semibold">
-              Checkout
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Bottom Checkout */}
+      <CheckOutBottomBar
+        selectedItems={selected}
+        totalPrice={totalPrice}
+        onPlaceOrder={() => console.log("onPlaceOrder")}
+      />
     </div>
   );
 };

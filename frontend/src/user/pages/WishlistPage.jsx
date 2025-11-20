@@ -1,101 +1,102 @@
 import React, { useEffect, useState } from "react";
-import { Heart, Trash2 } from "lucide-react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
+import Notification from "../../shared/components/Notification";
+import { useWishlist } from "../hook/useWishlist";
+import { useProducts } from "../hook/useProducts";
+import EmptyWishlist from "./EmptyWishlist";
+import { WishlistCard } from "../code/cards/WishlistCard";
+import MoveToCartPopUp from "../code/pop-up/MoveToCartPopUp";
 
 const WishlistPage = () => {
-  const [wishlist, setWishlist] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const auth = getAuth();
-  const db = getFirestore();
+  const { wishlist, loading: wishlistLoading, reload } = useWishlist();
+  const { getProduct } = useProducts();
 
-  // Fetch wishlist (Firebase if logged in, else localStorage)
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [notification, setNotification] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const showNotification = (msg, type = "info") => {
+    setNotification({ message: msg, type });
+    setTimeout(() => setNotification(null), 2000);
+  };
+
+  /**  Fetch all wishlist products */
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setLoading(true);
+    if (!wishlist || wishlist.length === 0) {
+      setProducts([]);
+      setLoadingProducts(false);
+      return;
+    }
+    fetchAllProducts();
+  }, [wishlist]);
 
-      if (user) {
-        // ⭐ Fetch From Firebase
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-
-        if (userSnap.exists() && userSnap.data().wishlist) {
-          setWishlist(userSnap.data().wishlist);
-        } else {
-          setWishlist([]);
-        }
-      } else {
-        // ⭐ Fetch From LocalStorage
-        const localData = JSON.parse(localStorage.getItem("wishlist")) || [];
-        setWishlist(localData);
-      }
-
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  // ⭐ Remove item from wishlist (local + Firebase synced)
-  const removeItem = async (id) => {
-    const updated = wishlist.filter((item) => item.id !== id);
-    setWishlist(updated);
-
-    const user = auth.currentUser;
-
-    if (user) {
-      await updateDoc(doc(db, "users", user.uid), { wishlist: updated });
-    } else {
-      localStorage.setItem("wishlist", JSON.stringify(updated));
+  const fetchAllProducts = async () => {
+    try {
+      setLoadingProducts(true);
+      const req = wishlist.map((item) => getProduct(item.productId));
+      const results = await Promise.all(req);
+      setProducts(results.filter(Boolean));
+    } finally {
+      setLoadingProducts(false);
     }
   };
 
-  if (loading) {
+  /**  Page Loading State */
+  if (wishlistLoading || loadingProducts) {
     return (
-      <div className="w-full h-40 flex items-center justify-center text-lg font-semibold">
-        Loading wishlist...
+      <div className="w-full h-40 flex items-center justify-center">
+        Loading...
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
-      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <Heart size={26} /> Your Wishlist
-      </h2>
+    <div className="max-w-6xl mx-auto px-1 md:px-4 py-3 md:py-5">
+      {/* Notification */}
+      {notification && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+          duration={2000}
+        />
+      )}
 
-      {/* If empty */}
-      {wishlist.length === 0 ? (
-        <div className="text-center text-gray-500 py-20 text-lg">
-          Your wishlist is empty 🥹
-        </div>
+      {/* Empty Wishlist */}
+      {products.length === 0 ? (
+        <EmptyWishlist />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {wishlist.map((item) => (
-            <div
-              key={item.id}
-              className="border p-4 rounded-xl shadow-sm hover:shadow-md transition relative">
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-full h-48 object-cover rounded-lg"
+        <>
+          <h2 className="ml-3 text-[20px] font-[crimsonPro] uppercase mb-6">
+            My Wishlist
+          </h2>
+
+          {/* Product Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-8">
+            {products.map((product) => (
+              <WishlistCard
+                key={product.id}
+                product={product}
+                showNotification={showNotification}
+                reloadWishlist={reload}
+                onMoveToCart={() => setSelectedProduct(product)}
               />
+            ))}
+          </div>
+        </>
+      )}
 
-              <h3 className="mt-3 text-lg font-semibold">{item.title}</h3>
-              <p className="text-gray-600 text-sm">{item.category}</p>
-
-              <div className="flex items-center justify-between mt-3">
-                <p className="font-bold text-lg">₹{item.price}</p>
-
-                <button
-                  onClick={() => removeItem(item.id)}
-                  className="p-2 rounded-full hover:bg-red-100">
-                  <Trash2 size={20} className="text-red-500" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Move To Cart Popup */}
+      {selectedProduct && (
+        <MoveToCartPopUp
+          open={true}
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onCompleted={() => {
+            showNotification("Added to cart!", "success");
+            setSelectedProduct(null);
+          }}
+        />
       )}
     </div>
   );

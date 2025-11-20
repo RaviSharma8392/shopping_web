@@ -1,47 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { getAllCategories } from "../../firebase/firebaseCategories";
 import CategoriesCard from "../cards/CategoriesCard";
 import LoadingScreen from "../loading/LoadingScreen";
 import { COLORS } from "../../../style/theme";
 
-const CategoriesSection = () => {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const load = async () => {
-      const data = await getAllCategories();
-      setCategories(data);
-      setLoading(false);
-    };
-    load();
-  }, []);
-
+const CategoriesSection = ({ categories, loading }) => {
   if (loading) return <LoadingScreen text="Loading categories..." />;
 
   return (
-    <section className="w-full px-4 md:px-12 py-14">
+    <section className="w-full px-4 md:px-12 md:py-14">
       {/* Title */}
       <div className="text-center mb-12">
         <h2
-          className="text-4xl md:text-5xl font-semibold"
           style={{
-            color: COLORS.textAlt,
             fontFamily: "Playfair Display, serif",
-          }}>
-          Shop by Category
+          }}
+          className="text-center text-3xl md:text-4xl tracking-wide mb-12 text-gray-900">
+          Categories
         </h2>
-
-        {/* ✅ refined subtitle */}
-        <p
-          className="mt-3 text-sm tracking-wide"
-          style={{
-            color: COLORS.textAlt,
-            fontFamily: "Inter, sans-serif",
-          }}>
-          Discover collections crafted with thoughtful details — explore the
-          styles that fit your everyday and festive moments.
-        </p>
       </div>
 
       {/* Categories container */}

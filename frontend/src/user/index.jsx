@@ -1,85 +1,90 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
-/* ----------------- LAYOUTS ----------------- */
+/* LAYOUTS */
 import UserLayout from "../user/layouts/UserLayout";
+import AccountLayout from "./layouts/AccountLayout";
+import CheckoutLayout from "./layouts/CheckoutLayout";
 
-/* ----------------- USER PAGES ----------------- */
-// import ItemDetails from "../pages/User/ItemDetails";
-// import CartPage from "../pages/Cart/CartPage";
-// import CheckoutPage from "../pages/User/CheckoutPage";
-// import CategoryPage from "../pages/User/CategoryPage";
-// import EnquiryForm from "../pages/User/EnquiryForm";
-// import AccountPage from "../pages/User/Account";
-
-/* ----------------- AUTH PAGES ----------------- */
-// import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignupPage";
-// import AboutUs from "../pages/User/AboutUs";
-// import EmailVerificationNotice from "../user/pages/EmailVerificationNotice";
-import NotFoundPage from "../shared/pages/NotFoundPage";
+/* USER PAGES */
 import HomePage from "../user/pages/HomePage";
-import AccountPage from "./pages/AccountPage";
-import CollectionPage from "./pages/CollectionsPage";
-import CategoryDetails from "./pages/CategoryDetails";
-import WishlistPage from "./pages/WishlistPage";
-import CartPage from "./pages/CartPage";
-import LoginPage from "./pages/LoginPage";
-import PhoneAuth from "./pages/PhoneAuth";
-// import WishlistPage from "../user/pages/WishlistPage";
+import CollectionPage from "../user/pages/CollectionsPage";
+import CategoryDetails from "../user/pages/CategoryDetails";
+import WishlistPage from "../user/pages/WishlistPage";
+import CartPage from "../user/pages/CartPage";
+import ProductDetailsPage from "./pages/ProductDetailsPage";
 
-/* ----------------- CHECK LOGIN ----------------- */
-const user = JSON.parse(localStorage.getItem("user"));
-console.log(user);
-// const isAdmin = user?.role === "admin";
+/* ACCOUNT PAGES */
+import ProfilePage from "../user/pages/ProfilePage";
+import OrdersPage from "../user/pages/OrdersPage";
 
-const UserRoutes = () => {
+/* AUTH PAGES */
+import SignupPage from "../user/pages/SignupPage";
+import LoginPage from "../user/pages/LoginPage";
+
+/* MISC */
+import NotFoundPage from "../shared/pages/NotFoundPage";
+import EmailVerification from "../user/pages/EmailVerificationNotice";
+import ConnectionErrorPage from "./pages/ConnectionErrorPage";
+
+import { useAuth } from "./context/AuthContext";
+
+/* - PROTECTED ROUTE  */
+const ProtectedRoute = ({ isLoggedIn, children }) => {
+  if (!isLoggedIn) return <Navigate to="/account/login" replace />;
+  return children;
+};
+
+const UserRoutes = ({ openSignupPopup }) => {
+  const { isLoggedIn } = useAuth();
+
   return (
     <Routes>
-      {/* ✅ PUBLIC AUTH ROUTES */}
-      {/* <Route
+      {/*  PUBLIC AUTH ROUTES  */}
+      <Route path="/connection-error" element={<ConnectionErrorPage />} />
+      <Route path="/account/login" element={<LoginPage />} />
+      <Route path="/account/register" element={<SignupPage />} />
+      <Route
         path="/account/email-verification"
-        element={<EmailVerificationNotice />}
-      /> */}
+        element={<EmailVerification />}
+      />
 
-      <Route path="account/login" element={<PhoneAuth />} />
-      <Route path="account/register" element={<SignupPage />} />
-      <Route path="/" element={<UserLayout />}>
-        <Route path="/cart" element={<CartPage />} />
-
+      {/*  PUBLIC SITE PAGES  */}
+      <Route
+        path="/"
+        element={<UserLayout openSignupPopup={openSignupPopup} />}>
         <Route index element={<HomePage />} />
         <Route path="collections" element={<CollectionPage />} />
-        <Route path="/collections/:slug" element={<CategoryDetails />} />
+        <Route path="collections/:slug" element={<CategoryDetails />} />
+        <Route path="product/:slug" element={<ProductDetailsPage />} />
       </Route>
-      <Route path="/account" element={<AccountPage />} />
-      <Route path="/wish" element={<WishlistPage />} />
 
-      {/*  USER ROUTES (only if logged in) */}
-      {/* {user && (
-        <Route path="/" element={<UserLayout />}>
-          <Route index element={<HomePage />} />
+      {/*  ACCOUNT PAGES (PROTECTED)  */}
+      <Route
+        path="/account"
+        element={
+          <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <AccountLayout />
+          </ProtectedRoute>
+        }>
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="orders" element={<OrdersPage />} />
+        <Route path="wishlist" element={<WishlistPage />} />
+        <Route index element={<ProfilePage />} />
+      </Route>
 
-          <Route
-            path="item/:id/:name/:category/:subcategory"
-            element={<ItemDetails />}
-          />
+      {/*  CHECKOUT ROUTES  */}
+      <Route
+        path="/checkout"
+        element={
+          <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <CheckoutLayout />
+          </ProtectedRoute>
+        }>
+        <Route path="cart" element={<CartPage />} />
+        <Route index element={<CartPage />} />
+      </Route>
 
-          <Route path="wishlist" element={<WishlistPage />} />
-          <Route path="cart" element={<CartPage />} />
-
-          <Route path="checkout" element={<CheckoutPage />} />
-          <Route path="additem" element={<AddItem />} />
-          <Route path="category/:categoryName" element={<CategoryPage />} />
-          <Route path=":id/:name/:type/enquiry" element={<EnquiryForm />} />
-          <Route path="about" element={<AboutUs />} />
-        </Route>
-      )} */}
-
-      {/*  IF USER NOT LOGGED IN → HOME PAGE */}
-
-      {/* ✅ SHARED ROUTES */}
-      {/* <Route path="/account" element={<AccountPage />} /> */}
-
-      {/* ✅ FALLBACK */}
+      {/*FALLBACK*/}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

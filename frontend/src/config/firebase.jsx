@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { getAuth, RecaptchaVerifier } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,27 +13,17 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENTID,
 };
 
+// Safety check (optional but good for debugging)
+if (!firebaseConfig.apiKey) {
+  console.warn("⚠ Firebase environment variables are missing!");
+}
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize services
-export const auth = getAuth(app); // Firebase Auth
-export const db = getFirestore(app); // Firestore
-export const storage = getStorage(app); // Storage
+// Services
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
 
-export const setupRecaptcha = () => {
-  if (!window.recaptchaVerifier) {
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      auth,
-      "recaptcha-container",
-      {
-        size: "invisible",
-        callback: () => {
-          console.log("Recaptcha Solved");
-        },
-      }
-    );
-  }
-  return window.recaptchaVerifier;
-};
 export default app;

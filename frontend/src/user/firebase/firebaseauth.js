@@ -3,10 +3,16 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   signInWithEmailAndPassword,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "firebase/auth";
-import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 
-// Convert Firebase errors into human readable form
+import { setDoc, doc, getDoc, serverTimestamp } from "firebase/firestore";
+
+// --------------------------------------------
+// HUMAN-FRIENDLY ERROR MESSAGES
+// --------------------------------------------
 const formatError = (code) => {
   switch (code) {
     case "auth/email-already-in-use":
@@ -24,45 +30,112 @@ const formatError = (code) => {
   }
 };
 
-// -------------------- SIGNUP --------------------
+// --------------------------------------------
+// SIGNUP (EMAIL + PASSWORD)
+// --------------------------------------------
 export const signupUser = async (form) => {
   try {
     const { email, password, firstName, lastName, mobile } = form;
 
-    // Create Firebase Auth user
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Send Email Verification
-    await sendEmailVerification(user);
-
-    // Save user in Firestore
-    await setDoc(doc(db, "users", user.uid), {
-      uid: user.uid,
-      firstName,
-      lastName,
-      email,
-      mobile,
-      createdAt: serverTimestamp(),
+    await updateProfile(user, {
+      displayName: `${firstName} ${lastName}`,
     });
 
-    return true;
+    await sendEmailVerification(user);
+
+    const userData = {
+      uid: user.uid,
+      email,
+      firstName,
+      lastName,
+      displayName: `${firstName} ${lastName}`,
+      mobile: mobile || "",
+      emailVerified: false,
+      provider: "email",
+          gender,
+ dateOfBirth,
+
+      role: "user",
+      createdAt: serverTimestamp()
+    };
+
+    await setDoc(doc(db, "users", user.uid), userData);
+
+    // ✅ Do NOT save in localStorage for email signup
+    // localStorage.setItem("user", JSON.stringify(userData));
+
+    return userData; // return Firestore data
   } catch (err) {
     throw new Error(formatError(err.code));
   }
 };
 
-// -------------------- LOGIN --------------------
+
+// --------------------------------------------
+// LOGIN (EMAIL + PASSWORD)
+// --------------------------------------------
 export const loginUser = async (email, password) => {
   try {
-    await signInWithEmailAndPassword(auth, email, password);
-    return true;
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    const user = result.user;
+
+    if (!user.emailVerified) {
+      throw new Error("Please verify your email before logging in.");
+    }
+
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+
+    const userData = snap.exists()
+      ? snap.data()
+      : {
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+        };
+
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    return userData;
   } catch (err) {
     throw new Error(formatError(err.code));
+  }
+};
+
+// --------------------------------------------
+// GOOGLE SIGNUP / LOGIN
+// --------------------------------------------
+export const googleSignup = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+
+    const user = result.user;
+
+    const nameParts = user.displayName?.split(" ") || ["", ""];
+
+    const userData = {
+      uid: user.uid,
+      email: user.email,
+      firstName: nameParts[0],
+      lastName: nameParts[1] || "",
+      displayName: user.displayName || "",
+      phone: user.phoneNumber || "",
+      provider: "google",
+      role: "user",
+      emailVerified: user.emailVerified,
+      createdAt: new Date(),
+    };
+
+    await setDoc(doc(db, "users", user.uid), userData, { merge: true });
+
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    return userData;
+  } catch (err) {
+    throw new Error(err.message || "Google login failed.");
   }
 };

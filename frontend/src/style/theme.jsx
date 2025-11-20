@@ -1,17 +1,17 @@
 export const COLORS = {
-  // --- PALETTE 1 (your main pink theme) ---
-  primary: "#D63384", // pink
-  secondary: "#F8C8DC", // soft pink
-  tertiary: "#6A4C93", // deep lavender
+  // --- RED PALETTE (Main Theme) ---
+  primary: "#D40000", // strong brand red
+  secondary: "#FF6B6B", // soft warm red
+  tertiary: "#8B0000", // deep maroon / dark red
 
-  accent: "#FFF0F5", // blush
-  text: "#2C1A27", // deep plum
-  dark: "#1d1420",
-  light: "#ffffff",
+  accent: "#FFE5E5", // blush light red background
+  text: "#2A0000", // very dark wine red for text
+  dark: "#1A0000", // deep red-black
+  light: "#FFFFFF",
 
-  // --- PALETTE 2 (your lavender theme) ---
-  primaryAlt: "#6A4C93", // deep lavender alt
-  secondaryAlt: "#C7B8EA", // soft lavender alt
-  accentAlt: "#EDE7F6", // creamy lilac alt
-  textAlt: "#2D2342", // plum alt
+  // --- RED PALETTE ALT (Softer Variation) ---
+  primaryAlt: "#B30000", // slightly deeper red
+  secondaryAlt: "#FFB3B3", // pastel red tint
+  accentAlt: "#FFF2F2", // ultra-light red
+  textAlt: "#330000", // rich dark maroon
 };

@@ -1,108 +1,126 @@
 import React, { useState, useEffect, useRef } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { Menu, Search, Heart, ShoppingBag } from "lucide-react";
 
 import PromotionalNavbar from "./PromotinlNavbar";
 import NavbarDropdwown from "../dropdown/NavbarDropdwown";
-import { categoryMenuItems } from "../../config/dropdwownData";
-import { COLORS } from "../../../style/theme";
 
-const MobileNavbar = ({ cartCount = 10, promoData, likeItemCOunt = 6 }) => {
+import { categoryMenuItems } from "../../data/categoryMenuItems";
+import { accountMenuData } from "../../data/accountMenuData";
+
+import { COLORS } from "../../../style/theme";
+import { IMAGES } from "../../../assets/images";
+
+const MobileNavbar = ({ cartCount = 10, promoData, wishLsitCount }) => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [scrolledValue, setScrolledValue] = useState(false);
 
   const navRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // ✅ Background changes on scroll
+  // ---------------------------------------
+  // Determine menu items based on location
+  // ---------------------------------------
+  const isAccountPage = location.pathname.startsWith("/account");
+  const activeMenuItems = isAccountPage ? accountMenuData : categoryMenuItems;
+
+  // ---------------------------------------
+  // Check if current page is home
+  // ---------------------------------------
+  const isHomePage = location.pathname === "/";
+  const scrolled = isHomePage ? scrolledValue : true;
+
+  // Scroll listener
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
+    if (!isHomePage) return;
+
+    const handleScroll = () => {
+      setScrolledValue(window.scrollY > 40);
+    };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [isHomePage]);
 
-  // ✅ Close dropdown when clicking outside
-  useEffect(() => {
-    const closeAll = (e) => {
-      if (navRef.current && !navRef.current.contains(e.target)) {
-        setMenuOpen(false);
-        setSearchOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", closeAll);
-    return () => document.removeEventListener("mousedown", closeAll);
-  }, []);
-
-  // ✅ Search handler
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
-      setSearchTerm("");
-      setSearchOpen(false);
-    }
+  // ---------------------------------------
+  // Theme-Based Dynamic Styles
+  // ---------------------------------------
+  const styles = {
+    headerBg: scrolled ? "white" : "transparent",
+    headerText: scrolled ? COLORS.textAlt : COLORS.light,
+    badgeBg: COLORS.primary,
+    dropdownBg: COLORS.light,
+    dropdownText: COLORS.primary, // text inside menu
   };
 
   return (
     <header
-      className="fixed top-0 left-0 w-full z-50 transition-all duration-300"
+      className="md:hidden fixed shadow top-0 left-0 w-full z-50 transition-all duration-300"
       style={{
-        background: scrolled ? COLORS.accentAlt : "transparent",
-        color: scrolled ? COLORS.textAlt : COLORS.light,
+        background: styles.headerBg,
+        color: styles.headerText,
       }}>
-      {/* ✅ Top Promo Slider */}
-      <PromotionalNavbar
-        items={promoData}
-        interval={3000}
-        scrolled={scrolled}
-      />
+      {/* Top Promo Slider */}
+      {!scrolledValue && (
+        <PromotionalNavbar
+          items={promoData}
+          interval={3000}
+          scrolled={scrolled}
+        />
+      )}
 
-      {/* ✅ Main Navbar */}
+      {/* NAV BAR */}
       <div
         ref={navRef}
-        className="flex items-center justify-between h-16 px-4 relative">
-        {/* ✅ Left: Menu Icon */}
+        className={`flex items-center justify-between h-16 px-4 relative  ${
+          scrolled ? "text-gray-500" : "text-white"
+        }`}>
+        {/* MENU ICON */}
         <button onClick={() => setMenuOpen(true)}>
           <Menu size={26} strokeWidth={1.7} />
         </button>
 
-        {/* ✅ Center Logo */}
+        {/* LOGO */}
         <NavLink
           to="/"
-          className="absolute left-1/2 -translate-x-1/2 flex items-center">
+          className="absolute left-1/2 -translate-x-5/2 flex items-center">
           <img
-            src="https://babli.in/cdn/shop/files/logo.png?v=1701265077&width=270"
-            className="h-10 object-contain"
+            src={!scrolled ? IMAGES.whiteAppLogo : IMAGES.appLogo}
+            className="h-8 object-contain"
             alt="Logo"
           />
         </NavLink>
 
-        {/* ✅ Right: Icons */}
+        {/* RIGHT ICONS */}
         <div className="flex items-center gap-4">
-          <NavLink to="/wishlist" className="relative hover:opacity-70">
+          {/* Wishlist */}
+          <NavLink
+            to="/wishlist"
+            className={`relative hover:opacity-75 ${
+              scrolled ? "text-gray-500" : "text-white"
+            }`}>
             <Heart size={27} strokeWidth={1.7} />
-            {likeItemCOunt > 0 && (
-              <span
-                className="absolute -top-1 -right-1 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
-                style={{ background: COLORS.primaryAlt }}>
-                {likeItemCOunt}
-              </span>
-            )}
           </NavLink>
+
+          {/* Search */}
           <button
             onClick={() => navigate("/search")}
-            className="hover:opacity-70">
+            className={`hover:opacity-75 ${
+              scrolled ? "text-gray-500" : "text-white"
+            }`}>
             <Search size={23} strokeWidth={1.7} />
           </button>
 
-          <NavLink to="/cart" className="relative hover:opacity-70">
+          {/* Cart */}
+          <NavLink
+            to="/cart"
+            className={`relative hover:opacity-75 ${
+              scrolled ? "text-gray-500" : "text-white"
+            }`}>
             <ShoppingBag size={27} strokeWidth={1.7} />
             {cartCount > 0 && (
-              <span
-                className="absolute -top-1 -right-1 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
-                style={{ background: COLORS.primaryAlt }}>
+              <span className="absolute -top-1 -right-1 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center bg-[#ff356c]">
                 {cartCount}
               </span>
             )}
@@ -110,35 +128,20 @@ const MobileNavbar = ({ cartCount = 10, promoData, likeItemCOunt = 6 }) => {
         </div>
       </div>
 
-      {/* ✅ Dropdown (Mobile Menu) */}
+      {/* DROPDOWN MENU */}
       {menuOpen && (
         <div
           className="w-full shadow-lg"
           style={{
-            background: COLORS.light,
-            color: COLORS.primaryAlt,
+            background: styles.dropdownBg,
+            color: styles.dropdownText,
           }}>
           <NavbarDropdwown
             isOpen={menuOpen}
             onClose={() => setMenuOpen(false)}
-            menuItems={categoryMenuItems}
+            menuItems={activeMenuItems}
             device="small"
           />
-        </div>
-      )}
-
-      {/* ✅ Search Dropdown */}
-      {searchOpen && (
-        <div
-          className="w-full shadow-md py-3 px-4"
-          style={{ background: COLORS.accentAlt }}>
-          <form onSubmit={handleSearch}>
-            <SearchBar
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              handleSearch={handleSearch}
-            />
-          </form>
         </div>
       )}
     </header>

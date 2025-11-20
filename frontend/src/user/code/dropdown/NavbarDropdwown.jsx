@@ -1,14 +1,10 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { User, X } from "lucide-react";
+import { LogOut, User, X } from "lucide-react";
+import { COLORS } from "../../../style/theme"; // <-- your red theme file
 
 const NavbarDropdown = ({ isOpen, onClose, menuItems }) => {
-  const COLORS = {
-    primary: "#D63384",
-    secondary: "#F8C8DC",
-    accent: "#FFF0F5",
-    text: "#2C1A27",
-  };
+  const isAccountPage = window.location.pathname.startsWith("/account");
 
   return (
     <>
@@ -32,7 +28,7 @@ const NavbarDropdown = ({ isOpen, onClose, menuItems }) => {
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
         `}
         style={{
-          background: "#ffffff",
+          background: COLORS.light,
           color: COLORS.text,
           width: "88%",
           maxWidth: "420px",
@@ -48,9 +44,11 @@ const NavbarDropdown = ({ isOpen, onClose, menuItems }) => {
         `}</style>
 
         {/* Header */}
-
         <div className="p-4 flex justify-end">
-          <button className="hover:opacity-70" onClick={onClose}>
+          <button
+            className="hover:opacity-70"
+            onClick={onClose}
+            style={{ color: COLORS.primary }}>
             <X size={26} strokeWidth={1.7} />
           </button>
         </div>
@@ -64,26 +62,40 @@ const NavbarDropdown = ({ isOpen, onClose, menuItems }) => {
               onClick={onClose}
               className={({ isActive }) =>
                 `py-4 text-lg font-[Amiri] border-b border-gray-300 transition-all
-                ${
-                  isActive
-                    ? "font-semibold text-[#D63384]"
-                    : "text-gray-800 hover:text-pink-600"
-                }`
-              }>
+                 ${isActive ? "font-semibold" : "hover:opacity-80"}`
+              }
+              style={({ isActive }) => ({
+                color: isActive ? COLORS.primary : COLORS.text,
+              })}>
               {item.label}
             </NavLink>
           ))}
         </nav>
 
-        {/* Footer – Only Account */}
+        {/* Footer – Account Entry */}
         <div
-          className="p-5 border-t  border-gray-300 flex items-center gap-3 cursor-pointer"
+          className="p-5 border-t border-gray-300 flex items-center gap-3 cursor-pointer hover:opacity-80"
           onClick={() => {
             onClose();
             window.location.href = "/account";
           }}>
-          <User size={24} strokeWidth={1.8} className="text-gray-800" />
-          <span className="text-md font-medium text-gray-800">Account</span>
+          {!isAccountPage ? (
+            <User
+              size={24}
+              strokeWidth={1.8}
+              style={{ color: COLORS.primary }}
+            />
+          ) : (
+            <LogOut
+              size={24}
+              strokeWidth={1.8}
+              style={{ color: COLORS.primary }}
+            />
+          )}
+
+          <span className="text-md font-medium" style={{ color: COLORS.text }}>
+            {!isAccountPage ? "Account" : "LogOut"}
+          </span>
         </div>
       </aside>
     </>

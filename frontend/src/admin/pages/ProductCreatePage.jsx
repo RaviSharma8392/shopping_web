@@ -1,253 +1,266 @@
-import React, { useState, useEffect } from "react";
-import { db } from "../../config/firebase";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  collection,
-  addDoc,
-  getDocs,
-  serverTimestamp,
-} from "firebase/firestore";
-import { COLORS } from "../../style/theme";
-import Notification from "../../components/common/Notification";
+  ArrowLeft,
+  CheckCircle,
+  Upload,
+  DollarSign,
+  Tag,
+  Image as ImageIcon,
+} from "lucide-react";
+import { useCategories } from "../hooks/useCategories";
+import Notification from "../../shared/components/Notification";
 
-const ProductCreatePage = () => {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [notice, setNotice] = useState(null);
+const CategoryCreatePage = () => {
+  const navigate = useNavigate();
+  const { createCategory, loading, error, clearError } = useCategories();
 
-  const [product, setProduct] = useState({
+  const [category, setCategory] = useState({
     name: "",
-    slug: "",
-    categoryId: "",
+    image: "",
     price: "",
-    salePrice: "",
-    thumbnail: "",
-    images: [""],
     description: "",
-    seoTitle: "",
-    seoDescription: "",
-    sizes: [{ size: "S", stock: 10 }],
-    colors: [{ name: "", hex: "", images: [""] }],
   });
 
-  /* ✅ Fetch categories */
-  useEffect(() => {
-    const loadCats = async () => {
-      const snap = await getDocs(collection(db, "categories"));
-      setCategories(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    };
-    loadCats();
-  }, []);
+  const [notification, setNotification] = useState(null);
 
-  /* ✅ Input handler */
-  const handleChange = (e) => {
-    setProduct({ ...product, [e.target.name]: e.target.value });
+  const showNotification = (type, message, duration = 5000) => {
+    setNotification({ type, message, duration });
   };
 
-  /* ✅ Submit */
+  const hideNotification = () => {
+    setNotification(null);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setCategory((prev) => ({ ...prev, [name]: value }));
+
+    // Clear errors when user starts typing
+    if (error) clearError();
+    if (notification) hideNotification();
+  };
+
+  const generateSlug = (name) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
+  };
+
+  const validateForm = () => {
+    if (!category.name.trim()) {
+      return "Category name is required";
+    }
+    if (!category.image.trim()) {
+      return "Image URL is required";
+    }
+    if (!isValidUrl(category.image)) {
+      return "Please enter a valid image URL";
+    }
+    return null;
+  };
+
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    try {
-      await addDoc(collection(db, "products"), {
-        ...product,
-        price: Number(product.price),
-        salePrice: Number(product.salePrice),
-        createdAt: serverTimestamp(),
-      });
-
-      setNotice({ type: "success", message: "Product created successfully!" });
-
-      setProduct({
-        name: "",
-        slug: "",
-        categoryId: "",
-        price: "",
-        salePrice: "",
-        thumbnail: "",
-        images: [""],
-        description: "",
-        seoTitle: "",
-        seoDescription: "",
-        sizes: [{ size: "S", stock: 10 }],
-        colors: [{ name: "", hex: "", images: [""] }],
-      });
-    } catch (err) {
-      console.error(err);
-      setNotice({ type: "error", message: "Failed to create product" });
+    const validationError = validateForm();
+    if (validationError) {
+      showNotification("error", validationError);
+      return;
     }
 
-    setLoading(false);
+    try {
+      const categoryData = {
+        ...category,
+        slug: generateSlug(category.name),
+        price: category.price || "0",
+      };
+
+      await createCategory(categoryData);
+
+      showNotification("success", "Category created successfully! 🎉", 3000);
+
+      setTimeout(() => {
+        navigate("/admin/categories");
+      }, 1500);
+    } catch (err) {
+      showNotification("error", err.message || "Failed to create category");
+    }
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      {notice && (
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 pt-16">
+      <div className="max-w-2xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Header Section */}
+        <div className="mb-8">
+          <button
+            onClick={() => navigate("/admin/categories")}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors duration-200 mb-6 group">
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-200" />
+            Back to Categories
+          </button>
+
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+              Create New Category
+            </h1>
+            <p className="text-lg text-gray-600 max-w-md mx-auto">
+              Add a new product category with name, image, and pricing details
+            </p>
+          </div>
+        </div>
+
+        {/* Form Section */}
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-2xl p-8 shadow-xl border border-gray-200 hover:shadow-2xl transition-shadow duration-300">
+          <div className="space-y-8">
+            {/* Category Name */}
+            <div className="group">
+              <label className="flex items-center gap-2 font-semibold text-gray-900 mb-3 text-lg">
+                <Tag className="w-5 h-5 text-[#B4292F]" />
+                Category Name *
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={category.name}
+                onChange={handleChange}
+                className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-[#B4292F] focus:ring-2 focus:ring-[#B4292F]/20 transition-all duration-200 placeholder-gray-400 text-gray-900 text-lg"
+                placeholder="Enter category name (e.g., Kurta, Saree, Dress)"
+                required
+              />
+            </div>
+
+            {/* Image URL */}
+            <div className="group">
+              <label className="flex items-center gap-2 font-semibold text-gray-900 mb-3 text-lg">
+                <ImageIcon className="w-5 h-5 text-[#B4292F]" />
+                Category Image *
+              </label>
+
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div className="flex-1">
+                  <div className="relative">
+                    <input
+                      type="url"
+                      name="image"
+                      value={category.image}
+                      onChange={handleChange}
+                      className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:border-[#B4292F] focus:ring-2 focus:ring-[#B4292F]/20 transition-all duration-200 placeholder-gray-400 text-gray-900"
+                      placeholder="https://example.com/category-image.jpg"
+                      required
+                    />
+                    <Upload className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Enter a direct URL to your category image
+                  </p>
+                </div>
+
+                {/* Image Preview */}
+                <div className="lg:w-48">
+                  <div className="bg-gray-100 rounded-xl p-4 border-2 border-dashed border-gray-300">
+                    <p className="text-sm text-gray-600 mb-3 text-center">
+                      Preview
+                    </p>
+                    {category.image ? (
+                      <div className="w-full h-32 rounded-lg overflow-hidden bg-white">
+                        <img
+                          src={category.image}
+                          className="w-full h-full object-cover"
+                          alt="Category preview"
+                          onError={(e) => {
+                            e.target.src =
+                              "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='10' fill='%239ca3af'%3EInvalid URL%3C/text%3E%3C/svg%3E";
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-32 rounded-lg bg-gray-200 flex items-center justify-center">
+                        <ImageIcon className="w-8 h-8 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Price */}
+            <div className="group">
+              <label className="flex items-center gap-2 font-semibold text-gray-900 mb-3 text-lg">
+                <DollarSign className="w-5 h-5 text-[#B4292F]" />
+                Starting Price
+              </label>
+              <div className="relative max-w-xs">
+                <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="number"
+                  name="price"
+                  value={category.price}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:border-[#B4292F] focus:ring-2 focus:ring-[#B4292F]/20 transition-all duration-200 placeholder-gray-400 text-gray-900 text-lg"
+                  placeholder="1499.00"
+                />
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                This will be displayed as the starting price for this category
+              </p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 mt-12 pt-8 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={() => navigate("/admin/categories")}
+              className="flex-1 px-8 py-4 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors duration-200 border-2 border-transparent hover:border-gray-300">
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 px-8 py-4 bg-[#B4292F] text-white rounded-xl font-semibold hover:bg-[#9c2227] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Creating Category...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-5 h-5" />
+                  Create Category
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Notification Panel */}
+      {notification && (
         <Notification
-          type={notice.type}
-          message={notice.message}
-          onClose={() => setNotice(null)}
+          type={notification.type}
+          message={notification.message}
+          duration={notification.duration}
+          onClose={hideNotification}
         />
       )}
-
-      <h1 className="text-3xl font-bold mb-6" style={{ color: COLORS.primary }}>
-        Create New Product
-      </h1>
-
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6 bg-white shadow-md p-6 rounded-xl border">
-        {/* ✅ Product Name */}
-        <InputField
-          label="Product Name"
-          name="name"
-          value={product.name}
-          onChange={handleChange}
-          placeholder="Floral Cotton Kurta Set"
-        />
-
-        {/* ✅ Slug */}
-        <InputField
-          label="Slug (URL)"
-          name="slug"
-          value={product.slug}
-          onChange={handleChange}
-          placeholder="floral-cotton-kurta-set"
-        />
-
-        {/* ✅ Category Dropdown */}
-        <div>
-          <label className="font-medium">Category</label>
-          <select
-            className="w-full mt-1 p-3 border rounded-lg"
-            name="categoryId"
-            value={product.categoryId}
-            onChange={handleChange}>
-            <option value="">Select Category</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.slug}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* ✅ Pricing */}
-        <div className="grid grid-cols-2 gap-4">
-          <InputField
-            label="Price"
-            name="price"
-            type="number"
-            value={product.price}
-            onChange={handleChange}
-            placeholder="2499"
-          />
-          <InputField
-            label="Sale Price"
-            name="salePrice"
-            type="number"
-            value={product.salePrice}
-            onChange={handleChange}
-            placeholder="1999"
-          />
-        </div>
-
-        {/* ✅ Thumbnail */}
-        <InputField
-          label="Thumbnail Image URL"
-          name="thumbnail"
-          value={product.thumbnail}
-          onChange={handleChange}
-          placeholder="https://example.com/img.jpg"
-        />
-
-        {/* ✅ Gallery Images */}
-        <GalleryImages product={product} setProduct={setProduct} />
-
-        {/* ✅ Description */}
-        <TextAreaField
-          label="Description"
-          name="description"
-          value={product.description}
-          onChange={handleChange}
-        />
-
-        {/* ✅ SEO */}
-        <InputField
-          label="SEO Title"
-          name="seoTitle"
-          value={product.seoTitle}
-          onChange={handleChange}
-        />
-        <TextAreaField
-          label="SEO Description"
-          name="seoDescription"
-          value={product.seoDescription}
-          onChange={handleChange}
-        />
-
-        {/* ✅ Submit */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 text-white rounded-lg font-medium"
-          style={{
-            backgroundColor: COLORS.primary,
-            opacity: loading ? 0.7 : 1,
-          }}>
-          {loading ? "Creating..." : "Create Product"}
-        </button>
-      </form>
     </div>
   );
 };
 
-export default ProductCreatePage;
-
-/* ✅ Reusable Inputs */
-const InputField = ({ label, ...rest }) => (
-  <div>
-    <label className="font-medium">{label}</label>
-    <input className="w-full p-3 border rounded-lg mt-1" {...rest} />
-  </div>
-);
-
-const TextAreaField = ({ label, ...rest }) => (
-  <div>
-    <label className="font-medium">{label}</label>
-    <textarea
-      className="w-full p-3 border rounded-lg mt-1"
-      rows={4}
-      {...rest}
-    />
-  </div>
-);
-
-/* ✅ Gallery Image Input Component */
-const GalleryImages = ({ product, setProduct }) => (
-  <div>
-    <label className="font-medium">Gallery Images</label>
-    {product.images.map((img, i) => (
-      <input
-        key={i}
-        className="w-full p-3 border rounded-lg mt-2"
-        value={img}
-        onChange={(e) => {
-          const arr = [...product.images];
-          arr[i] = e.target.value;
-          setProduct({ ...product, images: arr });
-        }}
-        placeholder="https://example.com/img.jpg"
-      />
-    ))}
-
-    <button
-      type="button"
-      className="mt-2 px-4 py-2 bg-gray-200 rounded-lg"
-      onClick={() =>
-        setProduct({ ...product, images: [...product.images, ""] })
-      }>
-      + Add Image
-    </button>
-  </div>
-);
+export default CategoryCreatePage;
