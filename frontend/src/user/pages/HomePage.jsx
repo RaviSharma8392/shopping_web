@@ -84,10 +84,10 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-white font-sans">
       <Helmet>
-        <title>MANMUKT — Luxury Ethnic Wear | Crafted with Love</title>
+        <title>Mnmukt — Luxury Ethnic Wear | Crafted with Love</title>
         <meta
           name="description"
-          content="Discover MANMUKT luxury ethnic wear crafted with premium fabrics, elegant designs and thoughtful details. Shop festive collections, curated looks and everyday elegance."
+          content="Discover Mnmukt luxury ethnic wear crafted with premium fabrics, elegant designs and thoughtful details. Shop festive collections, curated looks and everyday elegance."
         />
       </Helmet>
 

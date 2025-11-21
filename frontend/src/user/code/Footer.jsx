@@ -12,7 +12,7 @@ const Footer = () => {
       "Straight Suit Sets",
     ],
     customerService: ["Returns & Cancellation", "FAQs", "Contact us", "Blog"],
-    aboutUs: ["About Manmukt", "Careers", "Store Locator", "Terms & Privacy"],
+    aboutUs: ["About Mnmukt", "Careers", "Store Locator", "Terms & Privacy"],
   };
 
   const socialLinks = [
@@ -59,7 +59,7 @@ const Footer = () => {
 
         {/* About Us */}
         <div>
-          <h3 className="font-semibold text-gray-900 mb-4">About Manmukt</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">About Mnmukt</h3>
           <ul className="space-y-2">
             {footerData.aboutUs.map((item, idx) => (
               <li key={idx}>
@@ -105,7 +105,7 @@ const Footer = () => {
 
       {/* Bottom Footer */}
       <div className="bg-gray-100 py-4 text-center text-gray-500 text-xs">
-        &copy; 2024 Manmukt Fashion Limited. Made in India.
+        &copy; 2024 Mnmukt Fashion Limited. Made in India.
       </div>
     </footer>
   );

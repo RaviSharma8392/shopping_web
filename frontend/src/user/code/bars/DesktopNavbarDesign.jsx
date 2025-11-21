@@ -12,7 +12,7 @@ import { desktopMenuItems } from "../../data/navbarMenuItems";
 import { promoData } from "../../data/promoData";
 
 const DesktopNavbar = ({
-  app_name = "ManMukt",
+  app_name = "Mnmukt",
   cartCount,
   mobileMenuItems = [],
 }) => {

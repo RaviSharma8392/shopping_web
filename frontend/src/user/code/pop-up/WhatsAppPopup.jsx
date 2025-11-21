@@ -5,7 +5,7 @@ const WhatsAppPopup = ({ phoneNumber = "+911234567890" }) => {
   const [expanded, setExpanded] = useState(true);
 
   const message = encodeURIComponent(
-    "Namaste! I'm interested in this product and I have a few questions. Can you help? https://shopManmukt.com"
+    "Namaste! I'm interested in this product and I have a few questions. Can you help? https://shopmnmukt.com"
   );
   const whatsappLink = `https://wa.me/${phoneNumber}?text=${message}`;
 

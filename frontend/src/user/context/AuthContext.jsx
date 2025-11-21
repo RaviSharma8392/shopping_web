@@ -10,9 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // -------------------------------
-  // 1️⃣ Load User From LocalStorage First
-  // -------------------------------
+  //  Load User From LocalStorage First
   useEffect(() => {
     const localUser = localStorage.getItem("user");
 
@@ -24,9 +22,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // -------------------------------
-  // 2️⃣ Then Sync With Firebase Auth
-  // -------------------------------
+  //  Then Sync With Firebase Auth
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!firebaseUser) {
@@ -56,9 +52,7 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  // -------------------------------
   // MANUAL LOGIN
-  // -------------------------------
   const login = (uid, userData) => {
     setIsLoggedIn(true);
     setUser(userData);
@@ -66,18 +60,22 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("auth_uid", uid);
   };
 
-  // -------------------------------
   // UPDATE USER LOCALLY
-  // -------------------------------
   const updateUser = (updatedFields) => {
-    const updatedUser = { ...user, ...updatedFields };
+    const updatedUser = {
+      ...user,
+      ...updatedFields,
+      address: {
+        ...user?.address,
+        ...updatedFields.address,
+      },
+    };
+
     setUser(updatedUser);
     localStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
-  // -------------------------------
   // LOGOUT
-  // -------------------------------
   const logout = async () => {
     await signOut(auth);
     setUser(null);

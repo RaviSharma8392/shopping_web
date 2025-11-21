@@ -27,6 +27,7 @@ import EmailVerification from "../user/pages/EmailVerificationNotice";
 import ConnectionErrorPage from "./pages/ConnectionErrorPage";
 
 import { useAuth } from "./context/AuthContext";
+import AddressPage from "./pages/AddressPage";
 
 /* - PROTECTED ROUTE  */
 const ProtectedRoute = ({ isLoggedIn, children }) => {
@@ -81,6 +82,8 @@ const UserRoutes = ({ openSignupPopup }) => {
           </ProtectedRoute>
         }>
         <Route path="cart" element={<CartPage />} />
+        <Route path="address" element={<AddressPage />} />
+
         <Route index element={<CartPage />} />
       </Route>
 

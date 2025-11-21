@@ -10,9 +10,7 @@ import {
 
 import { setDoc, doc, getDoc, serverTimestamp } from "firebase/firestore";
 
-// --------------------------------------------
 // HUMAN-FRIENDLY ERROR MESSAGES
-// --------------------------------------------
 const formatError = (code) => {
   switch (code) {
     case "auth/email-already-in-use":
@@ -30,12 +28,10 @@ const formatError = (code) => {
   }
 };
 
-// --------------------------------------------
 // SIGNUP (EMAIL + PASSWORD)
-// --------------------------------------------
 export const signupUser = async (form) => {
   try {
-    const { email, password, firstName, lastName, mobile } = form;
+    const { email, password, firstName, lastName, mobile, address } = form;
 
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
@@ -55,17 +51,22 @@ export const signupUser = async (form) => {
       mobile: mobile || "",
       emailVerified: false,
       provider: "email",
-          gender,
- dateOfBirth,
-
       role: "user",
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
+
+      // Single address field
+      address: {
+        name: address?.name || `${firstName} ${lastName}`,
+        phone: address?.phone || mobile || "",
+        line1: address?.line1 || "",
+        locality: address?.locality || "",
+        city: address?.city || "",
+        state: address?.state || "",
+        pincode: address?.pincode || "",
+      },
     };
 
     await setDoc(doc(db, "users", user.uid), userData);
-
-    // ✅ Do NOT save in localStorage for email signup
-    // localStorage.setItem("user", JSON.stringify(userData));
 
     return userData; // return Firestore data
   } catch (err) {
@@ -74,9 +75,8 @@ export const signupUser = async (form) => {
 };
 
 
-// --------------------------------------------
+
 // LOGIN (EMAIL + PASSWORD)
-// --------------------------------------------
 export const loginUser = async (email, password) => {
   try {
     const result = await signInWithEmailAndPassword(auth, email, password);
@@ -105,9 +105,8 @@ export const loginUser = async (email, password) => {
   }
 };
 
-// --------------------------------------------
 // GOOGLE SIGNUP / LOGIN
-// --------------------------------------------
+
 export const googleSignup = async () => {
   try {
     const provider = new GoogleAuthProvider();
@@ -137,5 +136,36 @@ export const googleSignup = async () => {
     return userData;
   } catch (err) {
     throw new Error(err.message || "Google login failed.");
+  }
+};
+
+
+
+// ADD OR UPDATE ADDRESS
+
+export const addOrUpdateAddress = async (uid, newAddress) => {
+  try {
+    if (!uid) throw new Error("User ID is required.");
+    
+    const userRef = doc(db, "users", uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      throw new Error("User not found.");
+    }
+
+    // Merge new address with existing one if any
+    const existingData = userSnap.data();
+    const updatedAddress = {
+      ...(existingData.address || {}),
+      ...newAddress,
+      updatedAt: serverTimestamp(),
+    };
+
+    await updateDoc(userRef, { address: updatedAddress });
+
+    return { ...existingData, address: updatedAddress };
+  } catch (err) {
+    throw new Error(err.message || "Failed to update address.");
   }
 };
