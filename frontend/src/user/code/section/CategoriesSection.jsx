@@ -14,7 +14,7 @@ const CategoriesSection = ({ categories, loading }) => {
             fontFamily: "Playfair Display, serif",
           }}
           className="text-center text-3xl md:text-4xl tracking-wide mb-12 text-gray-900">
-          Categories
+          SHOP by CATEGORIES
         </h2>
       </div>
 

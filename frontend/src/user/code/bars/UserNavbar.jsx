@@ -2,10 +2,10 @@ import React from "react";
 import DesktopNavbar from "./DesktopNavbarDesign";
 import MobileTopbar from "./MobileNavbarDesign";
 import promoData from "../../data/promoData.json";
-import { desktopMenuItems, mobileMenuItems } from "../../config/dropdwownData";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 import BottomHomeNavbar from "./BottomHomeNavbar";
+import { categoryMenuItems } from "../../data/categoryMenuItems";
 
 const UserNavbar = () => {
   const { count: cartCount } = useCart();
@@ -19,8 +19,7 @@ const UserNavbar = () => {
           cartCount={cartCount}
           wishlistCount={wishlistCount}
           promoData={promoData}
-          desktopMenuItems={desktopMenuItems}
-          mobileMenuItems={mobileMenuItems}
+          categoryMenuItems={categoryMenuItems}
         />
       </div>
 

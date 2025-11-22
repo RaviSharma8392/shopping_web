@@ -45,7 +45,7 @@ const CartItemCard = ({ product, onRemove, onSelect, selected }) => {
           />
         </Link>
         {/* Select Tick Button */}
-        <button
+        {/* <button
           onClick={() => onSelect(product)}
           className="flex absolute top-1 left-1 items-center gap-1 px-2 py-1 uppercase transition">
           <Check
@@ -57,7 +57,7 @@ const CartItemCard = ({ product, onRemove, onSelect, selected }) => {
                 : "bg-white border border-gray-400 text-2xl"
             }`}
           />
-        </button>
+        </button> */}
       </div>
 
       {/* PRODUCT DETAILS */}
@@ -114,7 +114,7 @@ const CartItemCard = ({ product, onRemove, onSelect, selected }) => {
         )}
         {showSizePopup && (
           <SizePopup
-            sizes={product.sizes || [12, 42]}
+            sizes={product.sizes}
             selectedSize={selectedSize}
             onSizeChange={(size) => setSelectedSize(size)}
             onClose={() => setShowSizePopup(false)}

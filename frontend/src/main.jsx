@@ -9,6 +9,7 @@ import { AuthProvider } from "./user/context/AuthContext.jsx";
 import { PopupProvider } from "./user/context/SignUpPopContext.jsx";
 import { CartProvider } from "./user/context/CartContext.jsx";
 import { WishlistProvider } from "./user/context/WishlistContext.jsx";
+import { SelectedItemsProvider } from "./user/context/SelectedItemsContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -17,9 +18,11 @@ createRoot(document.getElementById("root")).render(
         <AuthProvider>
           <WishlistProvider>
             <PopupProvider>
-              <CartProvider>
-                <App />
-              </CartProvider>
+              <SelectedItemsProvider>
+                <CartProvider>
+                  <App />
+                </CartProvider>
+              </SelectedItemsProvider>
             </PopupProvider>
           </WishlistProvider>
         </AuthProvider>

@@ -1,6 +1,7 @@
 const CheckOutBottomBar = ({ selectedItems, totalPrice, onPlaceOrder }) => {
   // Show how many items are selected
   const selectedCount = selectedItems.length;
+  console.log(selectedItems);
 
   if (selectedCount === 0) return null; // hide if nothing selected
 

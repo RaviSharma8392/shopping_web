@@ -6,8 +6,10 @@ import CartControlHeader from "../code/header/CartControlHeader";
 import CheckOutBottomBar from "../code/bars/CheckOutBottomBar";
 import CartSummary from "../code/cartComponents/CartSummary";
 import EmptyCart from "../code/empty/EmptyCart";
+import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
+  const navigate = useNavigate();
   const { cart, loading, update, remove, clear } = useCart();
   const { isLoggedIn } = useAuth();
 
@@ -56,6 +58,11 @@ const CartPage = () => {
     (acc, item) => acc + item.originalPrice * item.quantity,
     0
   );
+
+  const handlePlaceOrder = () => {
+    // Navigate to address page and pass selected items
+    navigate("/checkout/address");
+  };
 
   if (!isLoggedIn)
     return (
@@ -112,7 +119,7 @@ const CartPage = () => {
       <CheckOutBottomBar
         selectedItems={selected}
         totalPrice={totalPrice}
-        onPlaceOrder={() => console.log("onPlaceOrder")}
+        onPlaceOrder={handlePlaceOrder}
       />
     </div>
   );

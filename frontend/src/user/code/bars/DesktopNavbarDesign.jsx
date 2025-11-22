@@ -14,7 +14,7 @@ import { promoData } from "../../data/promoData";
 const DesktopNavbar = ({
   app_name = "Mnmukt",
   cartCount,
-  mobileMenuItems = [],
+  categoryMenuItems = [],
 }) => {
   const [scrolledValue, setScrolledValue] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -78,7 +78,7 @@ const DesktopNavbar = ({
           menuOpen={menuOpen}
           setMenuOpen={setMenuOpen}
           menuItems={menuItems}
-          mobileMenuItems={mobileMenuItems}
+          categoryMenuItems={categoryMenuItems}
           DropdownComponent={NavbarDropdown}
         />
       </div>
@@ -87,7 +87,7 @@ const DesktopNavbar = ({
       <nav
         className={`hidden md:flex gap-10 justify-center text-sm font-medium mt-3 transition-all 
         ${scrolled ? "text-black" : "text-white"}`}>
-        {desktopMenuItems.slice(0, 12).map((item) => (
+        {categoryMenuItems.slice(0, 12).map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

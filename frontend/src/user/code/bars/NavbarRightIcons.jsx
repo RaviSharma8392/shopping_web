@@ -8,7 +8,7 @@ const NavbarRightIcons = ({
   setMenuOpen,
   menuItems,
   DropdownComponent,
-  mobileMenuItems,
+  categoryMenuItems,
 }) => {
   const { isLoggedIn } = useAuth();
   const { openSignupPopup } = usePopup();
@@ -57,7 +57,7 @@ const NavbarRightIcons = ({
           <DropdownComponent
             isOpen={menuOpen}
             onClose={() => setMenuOpen(false)}
-            menuItems={mobileMenuItems}
+            menuItems={categoryMenuItems}
           />
         </div>
       )}

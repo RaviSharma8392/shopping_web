@@ -28,6 +28,7 @@ import ConnectionErrorPage from "./pages/ConnectionErrorPage";
 
 import { useAuth } from "./context/AuthContext";
 import AddressPage from "./pages/AddressPage";
+import PaymentPage from "./pages/PaymentPage";
 
 /* - PROTECTED ROUTE  */
 const ProtectedRoute = ({ isLoggedIn, children }) => {
@@ -83,6 +84,7 @@ const UserRoutes = ({ openSignupPopup }) => {
         }>
         <Route path="cart" element={<CartPage />} />
         <Route path="address" element={<AddressPage />} />
+        <Route path="payment" element={<PaymentPage />} />
 
         <Route index element={<CartPage />} />
       </Route>

@@ -199,9 +199,26 @@ export const CartProvider = ({ children }) => {
   const count = cart.length;
   const totalQty = cart.reduce((s, it) => s + (it.qty || 0), 0);
 
+  // console.log(cart);
+  // Total price (selling price)
+  const totalPrice = Math.round(
+    cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  );
+
+  // Original total price (MRP)
+  const originalTotalPrice = Math.round(
+    cart.reduce(
+      (sum, item) => sum + (item.originalPrice ?? item.price) * item.quantity,
+      0
+    )
+  );
+
+  // console.log(originalTotalPrice, totalPrice);
   return (
     <CartContext.Provider
       value={{
+        totalPrice,
+        originalTotalPrice,
         cart,
         loading,
         syncing,

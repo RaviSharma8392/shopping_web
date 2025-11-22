@@ -43,6 +43,7 @@ const HomePage = () => {
     getNewArrivals,
     getFeaturedProducts,
     loading: productsLoading,
+    c,
   } = useProducts();
   const { items: collectionItems, fetchAll } =
     useFirebaseCollection(collectionName);
@@ -128,7 +129,11 @@ const HomePage = () => {
         />
 
         {/*Explore Collection */}
-        <CollectionGrid title="Explore Collection" items={collection} />
+        <CollectionGrid
+          title="SHOP by COLLECTIONS
+"
+          items={collection}
+        />
 
         {/* Customer Testimonials */}
         <TestimonialsSection />
