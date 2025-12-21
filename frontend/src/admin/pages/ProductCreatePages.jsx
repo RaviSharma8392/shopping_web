@@ -16,9 +16,13 @@ import {
   Save,
 } from "lucide-react";
 import { useProducts } from "../hooks/useProducts";
+import { useFirebaseCollection } from "../hooks/useCollection";
+
 import Notification from "../../shared/components/Notification";
 
 const ProductCreatePage = () => {
+  const { items } = useFirebaseCollection("itemsCollection");
+  console.log(items);
   const navigate = useNavigate();
   const { id } = useParams(); // Get product ID from URL for edit mode
   const {
@@ -394,7 +398,6 @@ const ProductCreatePage = () => {
                   ))}
                 </select>
               </div>
-
               {/* Collection Type */}
               <div className="group">
                 <label className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
@@ -406,7 +409,16 @@ const ProductCreatePage = () => {
                   value={product.collectionType}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#B4292F] focus:ring-2 focus:ring-[#B4292F]/20 transition-all duration-200">
-                  <option value="new-arrivals">New Arrivals</option>
+                  {items.length > 0 ? (
+                    items.map((item) => (
+                      <option key={item.id} value={item.name}>
+                        {item.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="new-arrivals">New Arrivals</option>
+                  )}
+                  {/* Optional static defaults */}
                   <option value="basics">Basics</option>
                 </select>
               </div>

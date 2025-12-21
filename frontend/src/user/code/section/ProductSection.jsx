@@ -45,7 +45,7 @@ const ProductSection = ({ title, subtitle, products = [] }) => {
 
       {/* Product Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6">
-        {products.slice(0, 4).map((product) => (
+        {products.slice(0, 8).map((product) => (
           <ProductCard
             key={product.id || product.sku || product.name} // ensure unique keys
             product={product}

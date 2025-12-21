@@ -4,8 +4,34 @@ import { IMAGES } from "../../assets/images";
 import { useProducts } from "../hook/useProducts";
 import { useFirebaseCollection } from "../hook/useItemCollection";
 import { useCategories } from "../hook/useCategory";
+import { db } from "../../config/firebase";
 
-// Lazy-loaded components
+export const fetchAllProducts = async () => {
+  try {
+    const itemsCollection = collection(db, "itemsCollection"); // Your Firestore collection
+    const snapshot = await getDocs(itemsCollection);
+
+    const products = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    console.log("All products:", products); // Print products
+    return products;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return [];
+  }
+};
+
+// -----------------------------
+// 3. Usage example
+// -----------------------------
+(async () => {
+  const allProducts = await fetchAllProducts();
+  // console.log("Total products fetched:", allProducts.length);
+})();
+// Lazy-loaded components (for better performance)
 const HeroBanner = React.lazy(() => import("../code/banner/HeroBanner"));
 const VideoSection = React.lazy(() => import("../code/section/VideoSection"));
 const CategoriesSection = React.lazy(() =>
@@ -21,9 +47,10 @@ const CollectionGrid = React.lazy(() => import("../code/cards/CollectionGrid"));
 const TestimonialsSection = React.lazy(() =>
   import("../code/section/TestimonialsSection")
 );
-const OfferStrip = React.lazy(() => import("../code/offer/OfferStrip"));
 
-// Simple fallback while lazy pages load
+// -----------------------------
+// Loading fallback (spinner while lazy components load)
+// -----------------------------
 const LoadingFallback = () => (
   <div className="flex flex-col items-center justify-center h-[50vh] text-center">
     <img
@@ -31,64 +58,128 @@ const LoadingFallback = () => (
       alt="Loading"
       className="w-20 h-20 mb-4 animate-spin-slow"
     />
-    <p className="text-gray-600 tracking-wide text-sm md:text-base">Loading…</p>
+    <p className="text-gray-600 text-sm">Loading…</p>
   </div>
 );
+
+// -----------------------------
+// Helper: Normalize collection types
+// Makes sure we always have an array, no matter how data is stored
+// -----------------------------
+const normalizeCollectionTypes = (product) => {
+  if (Array.isArray(product.collectionTypes)) return product.collectionTypes;
+  if (typeof product.collectionTypes === "string")
+    return [product.collectionTypes];
+  if (Array.isArray(product.collectionType)) return product.collectionType;
+  if (typeof product.collectionType === "string")
+    return [product.collectionType];
+  return [];
+};
 
 const HomePage = () => {
   const collectionName = "itemsCollection";
 
-  // Hooks for products, collection & categories
-  const {
-    getNewArrivals,
-    getFeaturedProducts,
-    loading: productsLoading,
-    c,
-  } = useProducts();
-  const { items: collectionItems, fetchAll } =
-    useFirebaseCollection(collectionName);
-  const { categories, loading: categoriesLoading } = useCategories();
+  // -----------------------------
+  // CUSTOM HOOKS
+  // -----------------------------
+  const { getProducts, loading: productsLoading } = useProducts(); // Get all products
+  const { items: collectionItems } = useFirebaseCollection(collectionName); // Get collection items
+  const { categories, loading: categoriesLoading } = useCategories(); // Get all categories
 
-  // State for rendering
-  const [collection, setCollection] = useState([]);
-  const [newArrivalProducts, setNewArrivalProducts] = useState([]);
-  const [featuredProducts, setFeaturedProducts] = useState([]);
-  const [allCategories, setAllCategories] = useState([]);
+  // -----------------------------
+  // STATE
+  // -----------------------------
+  const [homeProducts, setHomeProducts] = useState({}); // Products grouped by section
+  const [collection, setCollection] = useState([]); // All collection items
+  const [allCategories, setAllCategories] = useState([]); // All categories
 
-  // Fetch products on mount
+  // -----------------------------
+  // TEMP: Print all products to console (for debugging)
+  // -----------------------------
+  // useEffect(() => {
+  //   const fetchAllProducts = async () => {
+  //     try {
+  //       const products = await getProducts();
+  //       // console.log("ALL PRODUCTS:", products); // 🔹 Check all products
+  //     } catch (err) {
+  //       console.error("Failed to fetch products:", err);
+  //     }
+  //   };
+  //   fetchAllProducts();
+  // }, [getProducts]);
+
+  // -----------------------------
+  // CONFIG: PRODUCT SECTIONS
+  // You can manually add titles/subtitles for each collection type
+  // key = matches product.collectionType
+  // -----------------------------
+  const productSections = [
+    {
+      key: "new-arrivals",
+      title: "New Arrivals",
+      subtitle: "Fresh styles added this week",
+    },
+    { key: "basics", title: "Basics", subtitle: "Handpicked just for you" },
+    // {
+    //   key: "Suits & Anarkalis",
+    //   title: "Festive Collection",
+    //   subtitle: "Special designs for occasions",
+    // },
+    {
+      key: "Trends",
+      title: "Trends Collection",
+      subtitle: "Luxury and elegance",
+    },
+  ];
+
+  // -----------------------------
+  // FETCH HOME PRODUCTS & GROUP BY SECTION
+  // -----------------------------
   useEffect(() => {
     const fetchHomeProducts = async () => {
       try {
-        const arrivals = await getNewArrivals(8);
-        const featured = await getFeaturedProducts(8);
+        const products = await getProducts();
 
-        setNewArrivalProducts(arrivals || []);
-        setFeaturedProducts(featured || []);
-      } catch (err) {
-        console.error("Error fetching products:", err);
+        // Group products by collection key (section)
+        const grouped = {};
+        productSections.forEach((section) => {
+          grouped[section.key] = products.filter(
+            (product) =>
+              product.isActive === true &&
+              normalizeCollectionTypes(product).includes(section.key)
+          );
+        });
+
+        setHomeProducts(grouped);
+      } catch (error) {
+        console.error("Failed to fetch home products:", error);
       }
     };
 
     fetchHomeProducts();
-  }, []);
+  }, [getProducts]);
 
-  // Update collection when fetched
+  // -----------------------------
+  // SET COLLECTION & CATEGORIES
+  // -----------------------------
   useEffect(() => {
-    setCollection(collectionItems || []);
+    setCollection(collectionItems || []); // set all collection items
   }, [collectionItems]);
 
-  // Update categories when fetched
   useEffect(() => {
-    setAllCategories(categories || []);
+    setAllCategories(categories || []); // set all categories
   }, [categories]);
 
+  // -----------------------------
+  // RENDER
+  // -----------------------------
   return (
     <div className="min-h-screen bg-white font-sans">
       <Helmet>
         <title>Mnmukt — Luxury Ethnic Wear | Crafted with Love</title>
         <meta
           name="description"
-          content="Discover Mnmukt luxury ethnic wear crafted with premium fabrics, elegant designs and thoughtful details. Shop festive collections, curated looks and everyday elegance."
+          content="Discover Mnmukt luxury ethnic wear crafted with premium fabrics, elegant designs and thoughtful details."
         />
       </Helmet>
 
@@ -96,10 +187,10 @@ const HomePage = () => {
         {/* Hero Section */}
         <HeroBanner />
 
-        {/*Video Section */}
+        {/* Video Section */}
         <VideoSection />
 
-        {/*Categories Section*/}
+        {/* Categories Section */}
         {allCategories.length > 0 && (
           <CategoriesSection
             categories={allCategories}
@@ -107,35 +198,31 @@ const HomePage = () => {
           />
         )}
 
-        {/*Featured Collections*/}
-        <FeaturedCollectionSection
-          title="Winter Edit"
-          products={newArrivalProducts}
-          loading={productsLoading}
-        />
+        {/* Featured Collection Sections */}
+        {productSections.map((section) => (
+          <FeaturedCollectionSection
+            key={section.key}
+            title={section.title}
+            products={homeProducts[section.key] || []}
+            loading={productsLoading}
+          />
+        ))}
 
-        <FeaturedCollectionSection
-          title="Recommended For You"
-          products={featuredProducts}
-          loading={productsLoading}
-        />
+        {/* Product Sections */}
+        {productSections.map((section) => (
+          <ProductSection
+            key={section.key}
+            title={section.title}
+            subtitle={section.subtitle}
+            products={homeProducts[section.key] || []}
+            loading={productsLoading}
+          />
+        ))}
 
-        {/* New Arrivals*/}
-        <ProductSection
-          title="New Arrivals"
-          subtitle="Fresh styles added this week"
-          products={newArrivalProducts}
-          loading={productsLoading}
-        />
+        {/* Collections Grid */}
+        <CollectionGrid title="SHOP BY COLLECTIONS" items={collection} />
 
-        {/*Explore Collection */}
-        <CollectionGrid
-          title="SHOP by COLLECTIONS
-"
-          items={collection}
-        />
-
-        {/* Customer Testimonials */}
+        {/* Testimonials Section */}
         <TestimonialsSection />
       </Suspense>
     </div>

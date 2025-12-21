@@ -6,6 +6,16 @@ const EmailVerification = () => {
   const [status, setStatus] = useState("loading");
   const navigate = useNavigate();
 
+  // Custom color scheme
+  const COLORS = {
+    primary: "#ff356c",
+    secondary: "#e0e0e0",
+    text: "#2d3748",
+    success: "#10b981",
+    error: "#ef4444",
+    warning: "#f59e0b",
+  };
+
   useEffect(() => {
     const auth = getAuth();
 
@@ -39,36 +49,31 @@ const EmailVerification = () => {
   };
 
   const handleNavigateToLogin = () => {
-    navigate("/login");
+    navigate("/account/login");
   };
 
   const handleNavigateToDashboard = () => {
-    navigate("/dashboard");
+    navigate("/");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-white md:bg-gray-50 p-4">
+      <div className="max-w-md w-full bg-white p-8 md:rounded-2xl md:shadow-lg">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-center">
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
-            Email Verification
-          </h1>
-          <p className="text-blue-100 text-sm md:text-base">
-            Securing your account access
-          </p>
-        </div>
+        <h2 className="text-3xl font-[lora] text-[#ff356c] text-center mb-4">
+          Email Verification
+        </h2>
 
         {/* Content */}
-        <div className="p-6 md:p-8">
+        <div className="space-y-6">
           {/* Loading State */}
           {status === "loading" && (
             <div className="text-center space-y-6">
               <div className="relative">
-                <div className="w-20 h-20 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
+                <div className="w-20 h-20 border-4 border-gray-200 border-t-[#ff356c] rounded-full animate-spin mx-auto"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <svg
-                    className="w-8 h-8 text-blue-600"
+                    className="w-8 h-8 text-[#ff356c]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24">
@@ -82,22 +87,14 @@ const EmailVerification = () => {
                 </div>
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                <h3
+                  className="text-xl font-semibold mb-2"
+                  style={{ color: COLORS.text }}>
                   Verifying Your Email
-                </h2>
-                <p className="text-gray-600 text-sm md:text-base">
+                </h3>
+                <p className="text-sm" style={{ color: COLORS.text }}>
                   Please wait while we confirm your email address...
                 </p>
-              </div>
-              <div className="pt-4">
-                <div className="flex justify-center space-x-1">
-                  {[1, 2, 3].map((dot) => (
-                    <div
-                      key={dot}
-                      className="w-2 h-2 bg-blue-300 rounded-full animate-pulse"
-                      style={{ animationDelay: `${dot * 0.2}s` }}></div>
-                  ))}
-                </div>
               </div>
             </div>
           )}
@@ -120,30 +117,27 @@ const EmailVerification = () => {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                  Email Verified Successfully! 🎉
-                </h2>
-                <p className="text-gray-600 text-sm md:text-base">
+                <h3
+                  className="text-xl font-semibold mb-2"
+                  style={{ color: COLORS.text }}>
+                  Email Verified Successfully!
+                </h3>
+                <p className="text-sm" style={{ color: COLORS.text }}>
                   Your email has been verified. You now have full access to your
                   account.
                 </p>
               </div>
-              <div className="space-y-3 pt-2">
+              <div className="space-y-3">
                 <button
                   onClick={handleNavigateToDashboard}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 transform hover:scale-[1.02] active:scale-[0.98]">
+                  className="w-full bg-[#ff356c] hover:opacity-90 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200">
                   Go to Dashboard
                 </button>
                 <button
                   onClick={handleNavigateToLogin}
-                  className="w-full border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-colors duration-200">
+                  className="w-full border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-all duration-200">
                   Sign In Now
                 </button>
-              </div>
-              <div className="pt-4 border-t border-gray-200">
-                <p className="text-xs text-gray-500">
-                  You will be redirected automatically in a few seconds...
-                </p>
               </div>
             </div>
           )}
@@ -166,38 +160,35 @@ const EmailVerification = () => {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                <h3
+                  className="text-xl font-semibold mb-2"
+                  style={{ color: COLORS.text }}>
                   Verification Failed
-                </h2>
-                <p className="text-gray-600 text-sm md:text-base mb-4">
+                </h3>
+                <p className="text-sm mb-4" style={{ color: COLORS.text }}>
                   The verification link is invalid or has expired.
                 </p>
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-left">
-                  <p className="text-sm text-yellow-800">
-                    <strong>Possible reasons:</strong>
+                  <p className="text-sm text-yellow-800 font-medium mb-2">
+                    Possible reasons:
                   </p>
-                  <ul className="text-sm text-yellow-700 mt-2 space-y-1">
+                  <ul className="text-sm text-yellow-700 space-y-1">
                     <li>• The link has already been used</li>
                     <li>• The link has expired (usually 24 hours)</li>
                     <li>• Invalid verification code</li>
                   </ul>
                 </div>
               </div>
-              <div className="space-y-3 pt-2">
+              <div className="space-y-3">
                 <button
                   onClick={handleRetry}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200">
+                  className="w-full bg-[#ff356c] hover:opacity-90 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200">
                   Try Again
                 </button>
                 <Link
                   to="/resend-verification"
-                  className="block w-full border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-colors duration-200 text-center">
+                  className="block w-full border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-center">
                   Request New Verification Email
-                </Link>
-                <Link
-                  to="/support"
-                  className="block text-blue-600 hover:text-blue-800 text-sm font-medium text-center">
-                  Contact Support
                 </Link>
               </div>
             </div>
@@ -221,22 +212,24 @@ const EmailVerification = () => {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                <h3
+                  className="text-xl font-semibold mb-2"
+                  style={{ color: COLORS.text }}>
                   Invalid Request
-                </h2>
-                <p className="text-gray-600 text-sm md:text-base">
+                </h3>
+                <p className="text-sm" style={{ color: COLORS.text }}>
                   This verification link appears to be malformed or incomplete.
                 </p>
               </div>
-              <div className="space-y-3 pt-2">
+              <div className="space-y-3">
                 <Link
-                  to="/login"
-                  className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 text-center">
+                  to="/account/login"
+                  className="block w-full bg-[#ff356c] hover:opacity-90 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-center">
                   Go to Login
                 </Link>
                 <Link
                   to="/"
-                  className="block text-blue-600 hover:text-blue-800 text-sm font-medium text-center">
+                  className="block text-[#ff356c] hover:opacity-80 text-sm font-medium text-center">
                   Return to Homepage
                 </Link>
               </div>
@@ -245,11 +238,16 @@ const EmailVerification = () => {
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <span>Secure Verification</span>
-            <span>🔒 Protected</span>
-          </div>
+        <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+          <p className="text-xs" style={{ color: COLORS.text }}>
+            Need help?{" "}
+            <Link
+              to="/support"
+              className="font-medium"
+              style={{ color: COLORS.primary }}>
+              Contact Support
+            </Link>
+          </p>
         </div>
       </div>
     </div>

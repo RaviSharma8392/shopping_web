@@ -6,14 +6,17 @@ export const useProducts = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Load all products
+  // -----------------------------
+  // GET ALL PRODUCTS
+  // -----------------------------
   const getProducts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+
       const productsData = await productService.getProducts();
       setProducts(productsData);
-      console.log(productsData)
+
       return productsData;
     } catch (err) {
       setError(err.message);
@@ -23,15 +26,15 @@ export const useProducts = () => {
     }
   }, []);
 
-
-
-  // Get single product by ID
-  const getProduct = useCallback(async (id) => {
+  // -----------------------------
+  // GET PRODUCT BY ID
+  // -----------------------------
+  const getProductById = useCallback(async (id) => {
     try {
       setLoading(true);
       setError(null);
-      const product = await productService.getProduct(id);
-      return product;
+
+      return await productService.getProductById(id);
     } catch (err) {
       setError(err.message);
       throw err;
@@ -40,13 +43,15 @@ export const useProducts = () => {
     }
   }, []);
 
-  // Get product by slug
+  // -----------------------------
+  // GET PRODUCT BY SLUG
+  // -----------------------------
   const getProductBySlug = useCallback(async (slug) => {
     try {
       setLoading(true);
       setError(null);
-      const product = await productService.getProductBySlug(slug);
-      return product;
+
+      return await productService.getProductBySlug(slug);
     } catch (err) {
       setError(err.message);
       throw err;
@@ -55,13 +60,15 @@ export const useProducts = () => {
     }
   }, []);
 
-  // Get products by category
+  // -----------------------------
+  // GET PRODUCTS BY CATEGORY
+  // -----------------------------
   const getProductsByCategory = useCallback(async (categoryId) => {
     try {
       setLoading(true);
       setError(null);
-      const productsData = await productService.getProductsByCategory(categoryId);
-      return productsData;
+
+      return await productService.getProductsByCategory(categoryId);
     } catch (err) {
       setError(err.message);
       throw err;
@@ -70,58 +77,38 @@ export const useProducts = () => {
     }
   }, []);
 
-  // Get products by collection
-  const getProductsByCollection = useCallback(async (collectionType) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const productsData = await productService.getProductsByCollection(collectionType);
-      return productsData;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // -----------------------------
+  // 🔥 GENERIC: GET PRODUCTS BY COLLECTION TYPES
+  // -----------------------------
+  const getProductsByCollections = useCallback(
+    async (collectionTypes = [], limit = 8) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  // Get featured products
-  const getFeaturedProducts = useCallback(async (limit = 8) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const productsData = await productService.getFeaturedProducts(limit);
-      return productsData;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        return await productService.getProductsByCollections(
+          collectionTypes,
+          limit
+        );
+      } catch (err) {
+        setError(err.message);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
-  // Get new arrivals
-  const getNewArrivals = useCallback(async (limit = 8) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const productsData = await productService.getNewArrivals(limit);
-      return productsData;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Search products
+  // -----------------------------
+  // SEARCH PRODUCTS
+  // -----------------------------
   const searchProducts = useCallback(async (searchTerm) => {
     try {
       setLoading(true);
       setError(null);
-      const productsData = await productService.searchProducts(searchTerm);
-      return productsData;
+
+      return await productService.searchProducts(searchTerm);
     } catch (err) {
       setError(err.message);
       throw err;
@@ -130,13 +117,17 @@ export const useProducts = () => {
     }
   }, []);
 
-  // Create product
+  // -----------------------------
+  // CREATE PRODUCT
+  // -----------------------------
   const createProduct = useCallback(async (productData) => {
     try {
       setLoading(true);
       setError(null);
+
       const newProduct = await productService.createProduct(productData);
-      setProducts(prev => [...prev, newProduct]);
+      setProducts((prev) => [...prev, newProduct]);
+
       return newProduct;
     } catch (err) {
       setError(err.message);
@@ -146,14 +137,18 @@ export const useProducts = () => {
     }
   }, []);
 
-  // Update product
+  // -----------------------------
+  // UPDATE PRODUCT
+  // -----------------------------
   const updateProduct = useCallback(async (id, productData) => {
     try {
       setLoading(true);
       setError(null);
+
       await productService.updateProduct(id, productData);
-      setProducts(prev => 
-        prev.map(product => 
+
+      setProducts((prev) =>
+        prev.map((product) =>
           product.id === id ? { ...product, ...productData } : product
         )
       );
@@ -165,13 +160,16 @@ export const useProducts = () => {
     }
   }, []);
 
-  // Delete product
+  // -----------------------------
+  // DELETE PRODUCT
+  // -----------------------------
   const deleteProduct = useCallback(async (id) => {
     try {
       setLoading(true);
       setError(null);
+
       await productService.deleteProduct(id);
-      setProducts(prev => prev.filter(product => product.id !== id));
+      setProducts((prev) => prev.filter((product) => product.id !== id));
     } catch (err) {
       setError(err.message);
       throw err;
@@ -180,14 +178,18 @@ export const useProducts = () => {
     }
   }, []);
 
-  // Update product stock
+  // -----------------------------
+  // UPDATE PRODUCT STOCK
+  // -----------------------------
   const updateProductStock = useCallback(async (id, newStock) => {
     try {
       setLoading(true);
       setError(null);
+
       await productService.updateProductStock(id, newStock);
-      setProducts(prev => 
-        prev.map(product => 
+
+      setProducts((prev) =>
+        prev.map((product) =>
           product.id === id ? { ...product, stock: newStock } : product
         )
       );
@@ -199,40 +201,39 @@ export const useProducts = () => {
     }
   }, []);
 
-  // Clear error
+  // -----------------------------
+  // CLEAR ERROR
+  // -----------------------------
   const clearError = useCallback(() => setError(null), []);
 
-  // Load products on mount if needed
+  // Optional: load products on mount
   useEffect(() => {
-    // You can choose to load all products on mount or load on demand
     // getProducts();
   }, [getProducts]);
 
   return {
     // Data
     products,
-    
+
     // States
     loading,
     error,
-    
-    // Product operations
+
+    // Queries
     getProducts,
-    getProduct,
+    getProductById,
     getProductBySlug,
     getProductsByCategory,
-    getProductsByCollection,
-    getFeaturedProducts,
-    getNewArrivals,
+    getProductsByCollections,
     searchProducts,
-    
-    // CRUD operations
+
+    // Mutations
     createProduct,
     updateProduct,
     deleteProduct,
     updateProductStock,
-    
-    // Utility
-    clearError
+
+    // Utils
+    clearError,
   };
 };

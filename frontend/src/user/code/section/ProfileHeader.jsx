@@ -1,4 +1,3 @@
-// components/account/ProfileHeader.jsx
 import React from "react";
 import { User } from "lucide-react";
 

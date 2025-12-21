@@ -2,8 +2,10 @@ import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { House, List, UserCircle, Heart, Sparkles } from "lucide-react";
 import { usePopup } from "../../context/SignUpPopContext";
+import { useAuth } from "../../context/AuthContext";
 
-const BottomNavbar = ({ user }) => {
+const BottomNavbar = () => {
+  const { user } = useAuth();
   const { openSignupPopup } = usePopup();
   const navigate = useNavigate();
 
@@ -14,25 +16,18 @@ const BottomNavbar = ({ user }) => {
 
   const navItems = [
     { name: "Home", path: "/", icon: <House size={20} /> },
-
     { name: "Categories", path: "/categories", icon: <List size={20} /> },
-
-    {
-      name: "New",
-      path: "/new",
-      icon: <Sparkles size={20} />,
-    },
+    { name: "New", path: "/new", icon: <Sparkles size={20} /> },
 
     {
       name: "Wishlist",
-      path: "/account/wishlist",
+      path: "/user/wishlist",
       icon: <Heart size={20} />,
       protected: true,
     },
-
     {
       name: "Profile",
-      path: "/account/profile",
+      path: "/user/profile",
       icon: <UserCircle size={20} />,
       protected: true,
     },

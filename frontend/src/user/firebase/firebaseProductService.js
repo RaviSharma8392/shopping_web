@@ -1,6 +1,6 @@
-import { 
-  collection, 
-  addDoc, 
+import {
+  collection,
+  addDoc,
   serverTimestamp,
   updateDoc,
   deleteDoc,
@@ -8,12 +8,16 @@ import {
   getDocs,
   getDoc,
   query,
-  where 
+  where,
 } from "firebase/firestore";
 import { db } from "../../config/firebase";
 
+const PRODUCTS_COLLECTION = "products";
+
 export const productService = {
-  // Create new product
+  // -----------------------------
+  // CREATE PRODUCT
+  // -----------------------------
   createProduct: async (productData) => {
     try {
       const productWithMetadata = {
@@ -21,72 +25,92 @@ export const productService = {
         price: Number(productData.price) || 0,
         originalPrice: Number(productData.originalPrice) || 0,
         stock: Number(productData.stock) || 0,
+        collectionTypes: productData.collectionTypes || [], // 👈 IMPORTANT
+        isActive: productData.isActive ?? true,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
-      
-      const docRef = await addDoc(collection(db, "products"), productWithMetadata);
+
+      const docRef = await addDoc(
+        collection(db, PRODUCTS_COLLECTION),
+        productWithMetadata
+      );
+
       return { id: docRef.id, ...productWithMetadata };
     } catch (error) {
       throw new Error(`Failed to create product: ${error.message}`);
     }
   },
 
-  // Get all products
+  // -----------------------------
+  // GET ALL PRODUCTS
+  // -----------------------------
   getProducts: async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      return querySnapshot.docs.map(doc => ({
+      const snapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
+      return snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
     } catch (error) {
       throw new Error(`Failed to fetch products: ${error.message}`);
     }
   },
 
-  // Get single product by ID
-  getProduct: async (id) => {
+  // -----------------------------
+  // GET PRODUCT BY ID
+  // -----------------------------
+  getProductById: async (id) => {
     try {
-      const docRef = doc(db, "products", id);
+      const docRef = doc(db, PRODUCTS_COLLECTION, id);
       const docSnap = await getDoc(docRef);
-      
-      if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() };
-      } else {
+
+      if (!docSnap.exists()) {
         throw new Error("Product not found");
       }
+
+      return { id: docSnap.id, ...docSnap.data() };
     } catch (error) {
       throw new Error(`Failed to fetch product: ${error.message}`);
     }
   },
 
-  // Get product by slug
+  // -----------------------------
+  // GET PRODUCT BY SLUG
+  // -----------------------------
   getProductBySlug: async (slug) => {
     try {
-      const q = query(collection(db, "products"), where("slug", "==", slug));
-      const querySnapshot = await getDocs(q);
-      
-      if (querySnapshot.empty) {
+      const q = query(
+        collection(db, PRODUCTS_COLLECTION),
+        where("slug", "==", slug)
+      );
+
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
         throw new Error("Product not found");
       }
-      
-      const doc = querySnapshot.docs[0];
-      return { id: doc.id, ...doc.data() };
+
+      const docSnap = snapshot.docs[0];
+      return { id: docSnap.id, ...docSnap.data() };
     } catch (error) {
       throw new Error(`Failed to fetch product: ${error.message}`);
     }
   },
 
-  // Update product
+  // -----------------------------
+  // UPDATE PRODUCT
+  // -----------------------------
   updateProduct: async (id, productData) => {
     try {
-      const docRef = doc(db, "products", id);
+      const docRef = doc(db, PRODUCTS_COLLECTION, id);
+
       await updateDoc(docRef, {
         ...productData,
         price: Number(productData.price) || 0,
         originalPrice: Number(productData.originalPrice) || 0,
         stock: Number(productData.stock) || 0,
+        collectionTypes: productData.collectionTypes || [],
         updatedAt: serverTimestamp(),
       });
     } catch (error) {
@@ -94,104 +118,89 @@ export const productService = {
     }
   },
 
-  // Delete product
+  // -----------------------------
+  // DELETE PRODUCT
+  // -----------------------------
   deleteProduct: async (id) => {
     try {
-      const docRef = doc(db, "products", id);
-      await deleteDoc(docRef);
+      await deleteDoc(doc(db, PRODUCTS_COLLECTION, id));
     } catch (error) {
       throw new Error(`Failed to delete product: ${error.message}`);
     }
   },
 
-  // Get products by category
+  // -----------------------------
+  // GET PRODUCTS BY CATEGORY
+  // -----------------------------
   getProductsByCategory: async (categoryId) => {
     try {
-      const q = query(collection(db, "products"), where("categoryId", "==", categoryId));
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
+      const q = query(
+        collection(db, PRODUCTS_COLLECTION),
+        where("categoryId", "==", categoryId),
+        where("isActive", "==", true)
+      );
+
+      const snapshot = await getDocs(q);
+
+      return snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
     } catch (error) {
       throw new Error(`Failed to fetch products by category: ${error.message}`);
     }
   },
 
-  // Get products by collection type
-  getProductsByCollection: async (collectionType) => {
+  // -----------------------------
+  // 🔥 GENERIC: GET PRODUCTS BY COLLECTION TYPES
+  // -----------------------------
+  getProductsByCollections: async (collectionTypes = [], limit = 8) => {
     try {
-      const q = query(collection(db, "products"), where("collectionType", "==", collectionType));
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-    } catch (error) {
-      throw new Error(`Failed to fetch products by collection: ${error.message}`);
-    }
-  },
+      if (!collectionTypes.length) return [];
 
-  // Get featured products
-  getFeaturedProducts: async (limit = 8) => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      const products = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      // Filter featured products (you can add a 'featured' field to products)
-      return products
-        .filter(product => product.isActive)
+      const q = query(
+        collection(db, PRODUCTS_COLLECTION),
+        where("isActive", "==", true),
+        where("collectionTypes", "array-contains-any", collectionTypes)
+      );
+
+      const snapshot = await getDocs(q);
+
+      return snapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
         .slice(0, limit);
     } catch (error) {
-      throw new Error(`Failed to fetch featured products: ${error.message}`);
+      throw new Error(`Failed to fetch products by collections: ${error.message}`);
     }
   },
 
-  // Get new arrivals
-  getNewArrivals: async (limit = 8) => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      const products = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      return products
-        .filter(product => product.collectionType === "new-arrivals" && product.isActive)
-        .sort((a, b) => new Date(b.createdAt?.toDate?.() || 0) - new Date(a.createdAt?.toDate?.() || 0))
-        .slice(0, limit);
-    } catch (error) {
-      throw new Error(`Failed to fetch new arrivals: ${error.message}`);
-    }
-  },
-
-  // Search products
+  // -----------------------------
+  // SEARCH PRODUCTS (CLIENT SIDE)
+  // -----------------------------
   searchProducts: async (searchTerm) => {
     try {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      const products = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      return products.filter(product => 
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.collectionType?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const snapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
+
+      return snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((product) =>
+          product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
     } catch (error) {
       throw new Error(`Failed to search products: ${error.message}`);
     }
   },
 
-  // Update product stock
+  // -----------------------------
+  // UPDATE PRODUCT STOCK
+  // -----------------------------
   updateProductStock: async (id, newStock) => {
     try {
-      const docRef = doc(db, "products", id);
-      await updateDoc(docRef, {
+      await updateDoc(doc(db, PRODUCTS_COLLECTION, id), {
         stock: Number(newStock) || 0,
         updatedAt: serverTimestamp(),
       });
@@ -200,27 +209,36 @@ export const productService = {
     }
   },
 
-  // Get low stock products
+  // -----------------------------
+  // LOW STOCK PRODUCTS
+  // -----------------------------
   getLowStockProducts: async (threshold = 10) => {
     try {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      return querySnapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(product => (product.stock || 0) <= threshold && product.stock > 0);
+      const snapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
+
+      return snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter(
+          (product) =>
+            product.stock > 0 && product.stock <= threshold
+        );
     } catch (error) {
       throw new Error(`Failed to fetch low stock products: ${error.message}`);
     }
   },
 
-  // Get out of stock products
+  // -----------------------------
+  // OUT OF STOCK PRODUCTS
+  // -----------------------------
   getOutOfStockProducts: async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      return querySnapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(product => (product.stock || 0) <= 0);
+      const snapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
+
+      return snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((product) => product.stock <= 0);
     } catch (error) {
       throw new Error(`Failed to fetch out of stock products: ${error.message}`);
     }
-  }
+  },
 };

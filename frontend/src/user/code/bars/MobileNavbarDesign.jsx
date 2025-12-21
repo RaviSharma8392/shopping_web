@@ -96,7 +96,7 @@ const MobileNavbar = ({ cartCount = 10, promoData, wishLsitCount }) => {
         <div className="flex items-center gap-4">
           {/* Wishlist */}
           <NavLink
-            to="/account/wishlist"
+            to="/user/wishlist"
             className={`relative hover:opacity-75 ${
               scrolled ? "text-gray-500" : "text-white"
             }`}>

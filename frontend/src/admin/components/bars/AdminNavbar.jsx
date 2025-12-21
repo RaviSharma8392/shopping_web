@@ -137,10 +137,12 @@ export default function AdminNavbar() {
             {/* Logo */}
             <Link to="/admin" className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-r from-[#B4292F] to-[#8f1f23] rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">B</span>
+                <span className="text-white font-bold text-lg">M</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">BIBA Admin</h1>
+                <h1 className="text-xl font-bold text-gray-900">
+                  MANMUKT Admin
+                </h1>
                 <p className="text-xs text-gray-500">Management Panel</p>
               </div>
             </Link>

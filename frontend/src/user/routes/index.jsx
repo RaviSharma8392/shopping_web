@@ -1,34 +1,26 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
 /* LAYOUTS */
-import UserLayout from "../user/layouts/UserLayout";
-import AccountLayout from "./layouts/AccountLayout";
-import CheckoutLayout from "./layouts/CheckoutLayout";
+import UserLayout from "../layouts/UserLayout";
+import CheckoutLayout from "../layouts/CheckoutLayout";
+import AccountLayout from "../layouts/AccountLayout";
 
 /* USER PAGES */
-import HomePage from "../user/pages/HomePage";
-import CollectionPage from "../user/pages/CollectionsPage";
-import CategoryDetails from "../user/pages/CategoryDetails";
-import WishlistPage from "../user/pages/WishlistPage";
-import CartPage from "../user/pages/CartPage";
-import ProductDetailsPage from "./pages/ProductDetailsPage";
-
-/* ACCOUNT PAGES */
-import ProfilePage from "../user/pages/ProfilePage";
-import OrdersPage from "../user/pages/OrdersPage";
-
-/* AUTH PAGES */
-import SignupPage from "../user/pages/SignupPage";
-import LoginPage from "../user/pages/LoginPage";
+import HomePage from "../pages/HomePage";
+import CollectionPage from "../pages/CollectionsPage";
+import CategoryDetails from "../pages/CategoryDetails";
+import CartPage from "../pages/CartPage";
+import ProductDetailsPage from "../pages/ProductDetailsPage";
 
 /* MISC */
-import NotFoundPage from "../shared/pages/NotFoundPage";
-import EmailVerification from "../user/pages/EmailVerificationNotice";
-import ConnectionErrorPage from "./pages/ConnectionErrorPage";
 
-import { useAuth } from "./context/AuthContext";
-import AddressPage from "./pages/AddressPage";
-import PaymentPage from "./pages/PaymentPage";
+import { useAuth } from "../context/AuthContext";
+import AddressPage from "../pages/AddressPage";
+import PaymentPage from "../pages/PaymentPage";
+import ProfilePage from "../pages/ProfilePage";
+import OrdersPage from "../pages/OrdersPage";
+import WishlistPage from "../pages/WishlistPage";
+import NotFoundPage from "../../shared/pages/NotFoundPage";
 
 /* - PROTECTED ROUTE  */
 const ProtectedRoute = ({ isLoggedIn, children }) => {
@@ -41,15 +33,6 @@ const UserRoutes = ({ openSignupPopup }) => {
 
   return (
     <Routes>
-      {/*  PUBLIC AUTH ROUTES  */}
-      <Route path="/connection-error" element={<ConnectionErrorPage />} />
-      <Route path="/account/login" element={<LoginPage />} />
-      <Route path="/account/register" element={<SignupPage />} />
-      <Route
-        path="/account/email-verification"
-        element={<EmailVerification />}
-      />
-
       {/*  PUBLIC SITE PAGES  */}
       <Route
         path="/"
@@ -62,7 +45,7 @@ const UserRoutes = ({ openSignupPopup }) => {
 
       {/*  ACCOUNT PAGES (PROTECTED)  */}
       <Route
-        path="/account"
+        path="/user"
         element={
           <ProtectedRoute isLoggedIn={isLoggedIn}>
             <AccountLayout />
@@ -73,7 +56,6 @@ const UserRoutes = ({ openSignupPopup }) => {
         <Route path="wishlist" element={<WishlistPage />} />
         <Route index element={<ProfilePage />} />
       </Route>
-
       {/*  CHECKOUT ROUTES  */}
       <Route
         path="/checkout"
@@ -88,8 +70,6 @@ const UserRoutes = ({ openSignupPopup }) => {
 
         <Route index element={<CartPage />} />
       </Route>
-
-      {/*FALLBACK*/}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

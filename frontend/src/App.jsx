@@ -2,19 +2,19 @@ import { useAuth } from "./user/context/AuthContext";
 import { usePopup } from "./user/context/SignUpPopContext";
 
 import SignupPopup from "./user/code/pop-up/SignupPage";
-import UserRoutes from "./user";
 import AdminRoutes from "./admin";
+import UserRoutes from "./user/routes";
+import AuthRoutes from "./user/routes/authRoutes";
 
 const App = () => {
   const { signupOpen, closeSignupPopup } = usePopup();
   const { isLoggedIn, loading } = useAuth();
-  console.log("POPUP SHOULD SHOW?", !isLoggedIn && signupOpen);
-  console.log("signupOpen:", signupOpen);
-  console.log("isLoggedIn:", isLoggedIn);
 
-  const isAdminPath = window.location.pathname.startsWith("/admin");
+  const path = window.location.pathname;
 
-  // 🔥 Prevent popup flicker BEFORE auth loads
+  const isAdminPath = path.startsWith("/admin");
+  const isAuthPath = path.startsWith("/account");
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -25,17 +25,19 @@ const App = () => {
 
   return (
     <>
-      {/* ADMIN ROUTES */}
       {isAdminPath ? (
         <AdminRoutes />
+      ) : isAuthPath ? (
+        // Only authentication pages
+        <AuthRoutes />
       ) : (
         <>
-          {/* USER POPUP — open only when user is NOT logged in */}
+          {/* Popup only in user area */}
           {!isLoggedIn && signupOpen && (
             <SignupPopup onClose={closeSignupPopup} />
           )}
 
-          {/* USER ROUTES */}
+          {/* All frontend UI pages */}
           <UserRoutes />
         </>
       )}

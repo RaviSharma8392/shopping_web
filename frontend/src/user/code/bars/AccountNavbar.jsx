@@ -21,21 +21,21 @@ const AccountNavbar = () => {
       {/* Middle Navigation (hidden on mobile) */}
       <div className="hidden md:flex items-center gap-6">
         <Link
-          to="/account/orders"
+          to="/user/orders"
           className="font-medium hover:text-gray-800 transition text-sm sm:text-base"
           style={{ color: COLORS.primary }}>
           Orders
         </Link>
 
         <Link
-          to="/account/return-exchange"
+          to="/user/return-exchange"
           className="font-medium hover:text-gray-800 transition text-sm sm:text-base"
           style={{ color: COLORS.primary }}>
           Return / Exchange
         </Link>
 
         <Link
-          to="/account/wishlist"
+          to="/user/wishlist"
           className="font-medium hover:text-gray-800 transition text-sm sm:text-base"
           style={{ color: COLORS.primary }}>
           Wishlist
@@ -44,7 +44,7 @@ const AccountNavbar = () => {
 
       {/* Profile Icon */}
       <Link
-        to="/account/profile"
+        to="/user/profile"
         className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-orange-400 hover:opacity-90 transition">
         <User size={20} className="text-white" />
       </Link>

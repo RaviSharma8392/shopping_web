@@ -9,7 +9,7 @@ export const rightSideDesktopNavbarIcons = (navigate, cartCount = 0) => [
   },
   {
     icon: Heart,
-    onClick: () => navigate("/account/wishlist"),
+    onClick: () => navigate("/user/wishlist"),
     size: 22,
       protected: true
 

@@ -69,11 +69,6 @@ const SignupPopup = ({ onClose }) => {
   // EMAIL SIGNUP FINAL SUBMIT
   // ----------------------------------------------
   const handleFinalSubmit = async () => {
-    if (userInfo.password !== userInfo.confirmPassword) {
-      setError("Passwords do not match!");
-      return;
-    }
-
     try {
       setLoading(true);
       setSignupMethod("email");
