@@ -141,7 +141,7 @@ export default function AdminNavbar() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">
-                  MANMUKT Admin
+                  MNMUKT Admin
                 </h1>
                 <p className="text-xs text-gray-500">Management Panel</p>
               </div>
