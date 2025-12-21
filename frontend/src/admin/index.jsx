@@ -7,7 +7,6 @@ import CategoryCreatePage from "./pages/CategoryCreatePage";
 import ProductCreatePage from "./pages/ProductCreatePages";
 
 /* PROTECTED ADMIN */
-import ProtectedAdmin from "./ProtectedAdmin";
 import AdminCustomers from "./pages/AdminCustomersPage";
 import AdminCategories from "./pages/AdminAllCategories";
 import ProductsManagementPage from "./pages/ProductsManagementPage";
@@ -23,9 +22,7 @@ const AdminRoutes = () => {
       <Route
         path="/admin"
         element={
-          <ProtectedAdmin>
             <AdminLayout />
-          </ProtectedAdmin>
         }>
         {/* ✅ Dashboard */}
         <Route index element={<AdminDashboard />} />
