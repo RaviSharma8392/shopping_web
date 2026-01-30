@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 /* AUTH PAGES */
 import SignupPage from "../pages/SignupPage";
-import LoginPage from "../pages/LoginPage";
+// import { LoginPage } from "../../user/code/";
 
 /* MISC */
 import EmailVerification from "../pages/EmailVerificationNotice";
@@ -11,7 +11,7 @@ import ConnectionErrorPage from "../pages/ConnectionErrorPage";
 import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/ReserPasswordPage";
 
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../userApp/context/AuthContext";
 
 const AuthRoutes = () => {
   const { isLoggedIn } = useAuth();
@@ -21,7 +21,7 @@ const AuthRoutes = () => {
       <Route path="/connection-error" element={<ConnectionErrorPage />} />
       {!isLoggedIn ? (
         <>
-          <Route path="/account/login" element={<LoginPage />} />
+          {/* <Route path="/account/login" element={<LoginPage />} /> */}
           <Route path="/account/register" element={<SignupPage />} />
         </>
       ) : (

@@ -1,32 +1,16 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App.jsx";
-import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-
-import { AuthProvider } from "./user/context/AuthContext.jsx";
-import { PopupProvider } from "./user/context/SignUpPopContext.jsx";
-import { CartProvider } from "./user/context/CartContext.jsx";
-import { WishlistProvider } from "./user/context/WishlistContext.jsx";
-import { SelectedItemsProvider } from "./user/context/SelectedItemsContext.jsx";
+import { TaruvedaCartProvider } from "./userApp/context/TaruvedaCartContext";
+import App from "./App";
+import { AuthProvider } from "./userApp/features/auth/context/UserContext";
+import { PopupProvider } from "./userApp/context/SignUpPopContext";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
-      <HelmetProvider>
-        <AuthProvider>
-          <WishlistProvider>
-            <PopupProvider>
-              <SelectedItemsProvider>
-                <CartProvider>
-                  <App />
-                </CartProvider>
-              </SelectedItemsProvider>
-            </PopupProvider>
-          </WishlistProvider>
-        </AuthProvider>
-      </HelmetProvider>
-    </BrowserRouter>
-  </StrictMode>
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>
+  </StrictMode>,
 );

@@ -1,47 +1,25 @@
-import { useAuth } from "./user/context/AuthContext";
-import { usePopup } from "./user/context/SignUpPopContext";
+import React from "react";
+import { BrowserRouter } from "react-router-dom";
+import AppRoutes from "./AppRoutes";
 
-import SignupPopup from "./user/code/pop-up/SignupPage";
-import AdminRoutes from "./admin";
-import UserRoutes from "./user/routes";
-import AuthRoutes from "./user/routes/authRoutes";
+import { AuthProvider } from "./userApp/features/auth/context/UserContext";
+import { CartProvider } from "./userApp/context/CartContext";
+import { WishlistProvider } from "./userApp/context/WishlistContext";
+import { PopupProvider } from "./userApp/context/SignUpPopContext";
 
 const App = () => {
-  const { signupOpen, closeSignupPopup } = usePopup();
-  const { isLoggedIn, loading } = useAuth();
-
-  const path = window.location.pathname;
-
-  const isAdminPath = path.startsWith("/admin");
-  const isAuthPath = path.startsWith("/account");
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        Loading...
-      </div>
-    );
-  }
-
   return (
-    <>
-      {isAdminPath ? (
-        <AdminRoutes />
-      ) : isAuthPath ? (
-        // Only authentication pages
-        <AuthRoutes />
-      ) : (
-        <>
-          {/* Popup only in user area */}
-          {!isLoggedIn && signupOpen && (
-            <SignupPopup onClose={closeSignupPopup} />
-          )}
-
-          {/* All frontend UI pages */}
-          <UserRoutes />
-        </>
-      )}
-    </>
+    <BrowserRouter>
+      <AuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <PopupProvider>
+              <AppRoutes />
+            </PopupProvider>
+          </WishlistProvider>
+        </CartProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 };
 

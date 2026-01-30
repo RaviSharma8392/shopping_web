@@ -1,88 +1,91 @@
-import React, { useEffect } from "react";
-import { X, CheckCircle, AlertTriangle, Info } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { X, CheckCircle2, AlertCircle, Info, HelpCircle } from "lucide-react";
 
-// 1. Define the E-commerce Color Palette
-const THEME_COLORS = {
-  // General
-  defaultBackground: "#FFFFFF",
-  defaultText: "#333333",
-  defaultBorder: "#DDDDDD",
-
-  // Status Colors
-  success: {
-    bg: "#D4EDDA", // Light Green
-    text: "#155724", // Dark Green
-    border: "#C3E6CB", // Medium Green
-  },
-  error: {
-    bg: "#F8D7DA", // Light Red
-    text: "#721C24", // Dark Red
-    border: "#F5C6CB", // Medium Red
-  },
-  info: {
-    bg: "#CCE5FF", // Light Blue (often used for info, promotions, or general alerts)
-    text: "#004085", // Dark Blue
-    border: "#B8DAFF", // Medium Blue
-  },
-  warning: {
-    bg: "#FFF3CD", // Light Yellow (for caution/warning messages like 'low stock')
-    text: "#856404", // Dark Yellow/Brown
-    border: "#FFEEBA", // Medium Yellow
-  },
-};
-
-const Notification = ({
-  type = "info",
-  message,
-  onClose,
-  duration = 5000, // Reduced duration for a typical, non-critical toast
-}) => {
-  const iconSize = 22;
-
-  // Use AlertTriangle for both 'error' and 'warning' if they are needed,
-  // or define a separate icon for 'warning' if desired.
-  const ICONS = {
-    success: <CheckCircle size={iconSize} strokeWidth={1.8} />,
-    error: <AlertTriangle size={iconSize} strokeWidth={1.8} />,
-    info: <Info size={iconSize} strokeWidth={1.8} />,
-    warning: <AlertTriangle size={iconSize} strokeWidth={1.8} />, // Re-using AlertTriangle for Warning
-  };
+const Notification = ({ type = "info", message, onClose, duration = 4000 }) => {
+  const [progress, setProgress] = useState(100);
 
   useEffect(() => {
-    // Only set a timeout if duration is a positive number
     if (duration > 0) {
       const timer = setTimeout(onClose, duration);
-      return () => clearTimeout(timer);
+
+      // Smooth progress bar logic
+      const interval = setInterval(() => {
+        setProgress((prev) => Math.max(0, prev - 100 / (duration / 10)));
+      }, 10);
+
+      return () => {
+        clearTimeout(timer);
+        clearInterval(interval);
+      };
     }
   }, [duration, onClose]);
 
-  // Get the appropriate colors based on the notification type
-  const { bg, text, border } = THEME_COLORS[type] || {
-    bg: THEME_COLORS.defaultBackground,
-    text: THEME_COLORS.defaultText,
-    border: THEME_COLORS.defaultBorder,
+  // Premium Status Configuration
+  const STATUS_MAP = {
+    success: {
+      icon: <CheckCircle2 size={18} className="text-green-500" />,
+      accent: "bg-green-500",
+      label: "Success",
+    },
+    error: {
+      icon: <AlertCircle size={18} className="text-red-500" />,
+      accent: "bg-red-500",
+      label: "Error",
+    },
+    warning: {
+      icon: <AlertCircle size={18} className="text-amber-500" />,
+      accent: "bg-amber-500",
+      label: "Warning",
+    },
+    info: {
+      icon: <Info size={18} className="text-blue-500" />,
+      accent: "bg-black",
+      label: "Update",
+    },
   };
 
+  const config = STATUS_MAP[type] || STATUS_MAP.info;
+
   return (
-    <div
-      className="fixed top-5 right-5 z-50 p-4 rounded-lg flex items-center gap-3 shadow-lg border animate-slide-in"
-      style={{
-        background: bg,
-        color: text,
-        minWidth: "280px", // Slightly wider for better readability
-        maxWidth: "400px",
-        borderColor: border,
-      }}>
-      {/* Icon - color is derived from the text color */}
-      <div>{ICONS[type] || ICONS.info}</div>
+    <div className="fixed top-6 right-6 z-[300] w-full max-w-[340px] animate-in fade-in slide-in-from-right-8 duration-500">
+      <div className="relative overflow-hidden bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] border border-gray-100 flex items-center p-4 gap-4">
+        {/* Left Status Accent Line */}
+        <div
+          className={`absolute left-0 top-0 bottom-0 w-1.5 ${config.accent}`}
+        />
 
-      {/* Message */}
-      <p className="text-sm font-medium flex-1">{message}</p>
+        {/* Icon with Soft Background */}
+        <div className="flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center">
+            {config.icon}
+          </div>
+        </div>
 
-      {/* Close Button */}
-      <button onClick={onClose} className="hover:opacity-70 p-1 -m-1">
-        <X size={20} />
-      </button>
+        {/* Content */}
+        <div className="flex-1 pr-2">
+          <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400 mb-0.5">
+            {config.label}
+          </p>
+          <p className="text-sm font-medium text-gray-900 leading-snug">
+            {message}
+          </p>
+        </div>
+
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="p-1 text-gray-400 hover:text-black hover:bg-gray-100 rounded-full transition-all">
+          <X size={16} strokeWidth={2.5} />
+        </button>
+
+        {/* Progress Bar Timer */}
+        <div className="absolute bottom-0 left-0 h-[3px] bg-gray-100 w-full">
+          <div
+            className={`h-full transition-all linear ${config.accent}`}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
     </div>
   );
 };
