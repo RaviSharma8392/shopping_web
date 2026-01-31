@@ -90,7 +90,7 @@ const AppRoutes = () => {
             Protected: adminOnly={true}
         ==================================================== */}
         <Route
-          path="/admin"
+          path="/admin/*"
           element={
             <ProtectedRoute adminOnly={true}>
               <AdminRoutes />
