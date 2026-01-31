@@ -2,9 +2,8 @@ import React from "react";
 import DesktopNavbar from "./DesktopNavbarDesign";
 import MobileTopbar from "./MobileNavbarDesign";
 import promoData from "../../data/promoData.json";
-import { useCart } from "../../../../context/CartContext";
-import { useWishlist } from "../../../../context/WishlistContext";
-import BottomHomeNavbar from "./BottomHomeNavbar";
+// import { useCart } from "../../../../context/CartContext";
+// import { useWishlist } from "../../../../context/WishlistContext";
 import { categoryMenuItems } from "../../data/categoryMenuItems";
 
 const UserNavbar = () => {
@@ -33,7 +32,6 @@ const UserNavbar = () => {
           cartCount={cartCount}
           wishlistCount={wishlistCount}
         />
-        <BottomHomeNavbar />
       </div>
     </>
   );

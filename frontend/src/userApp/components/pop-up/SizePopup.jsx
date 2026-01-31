@@ -2,8 +2,7 @@ import React from "react";
 import { X } from "lucide-react";
 import SizeSelector from "../selector/SizeSelector";
 
-const SizePopup = ({ sizes, selectedSize, onSizeChange, onClose }) => {
-  console.log(sizes.length);
+const SizePopup = ({ sizes = [], selectedSize, onSizeChange, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white p-5 rounded-lg shadow-lg w-72 relative animate-fadeIn">
@@ -13,7 +12,7 @@ const SizePopup = ({ sizes, selectedSize, onSizeChange, onClose }) => {
           <X size={18} />
         </button>
 
-        {!sizes.length === 0 && (
+        {sizes.length > 0 && (
           <SizeSelector
             sizes={sizes}
             selectedSize={selectedSize}

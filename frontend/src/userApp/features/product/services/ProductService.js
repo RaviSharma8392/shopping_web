@@ -60,20 +60,28 @@ export const productService = {
   // -----------------------------
   // GET PRODUCT BY ID
   // -----------------------------
-  getProductById: async (id) => {
+ getProductById: async (id) => {
     try {
-      const docRef = doc(db, PRODUCTS_COLLECTION, id);
+      // 1. FIX THE CRASH: Force ID to be a String
+      // If id is undefined/null, return null immediately so we don't call Firestore
+      if (!id) return null; 
+      
+      const safeId = String(id); // Converts number 100 -> string "100"
+
+      const docRef = doc(db, PRODUCTS_COLLECTION, safeId);
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) {
-        throw new Error("Product not found");
+        // Return null instead of throwing Error so Promise.all doesn't fail completely
+        return null; 
       }
 
       return { id: docSnap.id, ...docSnap.data() };
     } catch (error) {
-      throw new Error(`Failed to fetch product: ${error.message}`);
+      console.error(`Error fetching product ${id}:`, error);
+      return null; // Return null so the rest of the cart still loads
     }
-  },
+},
 
   // -----------------------------
   // GET PRODUCT BY SLUG

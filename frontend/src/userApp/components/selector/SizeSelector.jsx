@@ -1,4 +1,5 @@
 const SizeSelector = ({ sizes, selectedSize, onSizeChange }) => {
+  console.log(sizes);
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-gray-700">

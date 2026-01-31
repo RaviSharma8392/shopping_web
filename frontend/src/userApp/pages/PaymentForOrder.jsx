@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import { useAuth } from "../features/auth/context/UserContext";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../features/cart/context/CartContext";
 
 const PLATFORM_FEE = 50;
 const DELIVERY_FEE = 0;

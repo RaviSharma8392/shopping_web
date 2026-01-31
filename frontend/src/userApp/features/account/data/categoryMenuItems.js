@@ -14,7 +14,7 @@ export const categoryMenuItems = [
   // BEAUTY & WELLNESS
   {
     label: "TaruVeda Organic Shampoo & Oil",
-    path: "/products/taruveda-organic-shampoo-oil",
+    path: "/taruveda-organic-shampoo-oil",
   },
 
   

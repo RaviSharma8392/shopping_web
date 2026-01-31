@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useProducts } from "../../product/hook/useProducts";
-import { useWishlist } from "../hook/useWishlist";
+import { useWishlist } from "../context/WishlistContext";
 import Notification from "../../../../shared/components/Notification";
 import EmptyWishlist from "./EmptyWishlist";
 import MoveToCartPopUp from "../components/pop-up/MoveToCartPopUp";
@@ -8,6 +8,7 @@ import { WishlistCard } from "../components/cards/WishlistCard";
 
 const WishlistPage = () => {
   const { wishlist, loading: wishlistLoading } = useWishlist();
+  console.log(wishlist);
   const { getProductById } = useProducts();
 
   const [products, setProducts] = useState([]);
@@ -15,36 +16,42 @@ const WishlistPage = () => {
   const [notification, setNotification] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  /** Notification helper */
+  /* -------------------------
+     NOTIFICATION
+  -------------------------- */
   const showNotification = (message, type = "info") => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 2000);
   };
 
-  /** Fetch wishlist products */
-  const fetchAllProducts = useCallback(async () => {
-    if (!wishlist || wishlist.length === 0) {
-      setProducts([]);
-      setLoadingProducts(false);
-      return;
-    }
+  /* -------------------------
+     LOAD PRODUCTS FROM IDS
+  -------------------------- */
+  useEffect(() => {
+    const loadProducts = async () => {
+      if (!wishlist.length) {
+        setProducts([]);
+        setLoadingProducts(false);
+        return;
+      }
 
-    setLoadingProducts(true);
-    try {
-      const requests = wishlist.map((item) => getProductById(item.productId));
-      const results = await Promise.all(requests);
-      setProducts(results.filter(Boolean));
-    } finally {
-      setLoadingProducts(false);
-    }
+      setLoadingProducts(true);
+      try {
+        const data = await Promise.all(
+          wishlist.map((item) => getProductById(item.productId)),
+        );
+        setProducts(data.filter(Boolean));
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    loadProducts();
   }, [wishlist, getProductById]);
 
-  /** Run when wishlist changes */
-  useEffect(() => {
-    fetchAllProducts();
-  }, [fetchAllProducts]);
-
-  /** Page Loading */
+  /* -------------------------
+     LOADING STATE
+  -------------------------- */
   if (wishlistLoading || loadingProducts) {
     return (
       <div className="w-full h-40 flex items-center justify-center">
@@ -53,8 +60,11 @@ const WishlistPage = () => {
     );
   }
 
+  /* -------------------------
+     RENDER
+  -------------------------- */
   return (
-    <div className="max-w-6xl mx-auto px-1 md:px-4 py-3 md:py-5">
+    <div className="max-w-9xl mx-auto px-1 md:px-4 py-3 md:py-5">
       {/* Notification */}
       {notification && (
         <Notification
@@ -65,7 +75,7 @@ const WishlistPage = () => {
         />
       )}
 
-      {/* Empty Wishlist */}
+      {/* Empty */}
       {products.length === 0 ? (
         <EmptyWishlist />
       ) : (
@@ -74,7 +84,6 @@ const WishlistPage = () => {
             My Wishlist
           </h2>
 
-          {/* Product Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-8">
             {products.map((product) => (
               <WishlistCard
@@ -88,10 +97,10 @@ const WishlistPage = () => {
         </>
       )}
 
-      {/* Move To Cart Popup */}
+      {/* Move to cart */}
       {selectedProduct && (
         <MoveToCartPopUp
-          open={true}
+          open
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
           onCompleted={() => {

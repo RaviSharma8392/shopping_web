@@ -14,16 +14,14 @@ import AdminDashboard from "./pages/AdminDashboard";
 import HomepageSetup from "./pages/HomepageSetup";
 import TestimonialsAdminPage from "./pages/TestimonialsAdminPage";
 import AdminCollectionPage from "./pages/AdminCollectionPage";
+import AdminOrdersPage from "./pages/AdminOrderDetailsPage";
+import AdminSignupPage from "./pages/AdminSignUpPage";
 
 const AdminRoutes = () => {
   return (
     <Routes>
       {/* ✅ All admin pages share AdminLayout */}
-      <Route
-        path="/admin"
-        element={
-            <AdminLayout />
-        }>
+      <Route path="" element={<AdminLayout />}>
         {/* ✅ Dashboard */}
         <Route index element={<AdminDashboard />} />
         {/* ✅ Category */}
@@ -33,6 +31,8 @@ const AdminRoutes = () => {
           element={<TestimonialsAdminPage />}
         />
         <Route path="content/homepage" element={<HomepageSetup />} />
+        <Route path="orders" element={<AdminOrdersPage />} />
+        <Route path="login" element={<AdminSignupPage />} />
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="categories" element={<AdminCategories />} />
         {/* ✅ Product */}

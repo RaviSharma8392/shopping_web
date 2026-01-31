@@ -1,104 +1,108 @@
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import React, { Suspense, lazy } from "react";
+import { Routes, Route, Navigate, useLocation, Outlet } from "react-router-dom";
 import { useAuth } from "./userApp/features/auth/context/UserContext";
 
-/* LAYOUTS */
+/* --- LAYOUTS (Eager Load to prevent layout shift) --- */
 import UserLayout from "./userApp/layouts/UserLayout";
-// import AdminLayout from "./admin/layouts/AdminLayout";
+import LoadingScreen from "./userApp/components/loading/LoadingScreen";
+import AdminRoutes from "./admin";
 
-/* PAGES */
-import HomePage from "./userApp/pages/HomePage";
-import ProductDetailsPage from "./userApp/pages/ProductDetailsPage";
+/* --- 1. LAZY LOAD: USER PAGES --- */
+const HomePage = lazy(() => import("./userApp/pages/HomePage"));
+const ContactUsPage = lazy(() => import("./userApp/pages/ContactUsPage"));
+const ProductDetailsPage = lazy(
+  () => import("./userApp/pages/ProductDetailsPage"),
+);
+const WishlistPage = lazy(
+  () => import("./userApp/features/wishList/pages/WishlistPage"),
+);
+const OrdersPage = lazy(() => import("./userApp/pages//OrdersPage")); // User's Order History
 
-/* ROUTES */
-import AuthRoutes from "./userApp/routes/AuthRoutes";
-import TaruvedaRoutes from "./userApp/routes/TaruvedaRoutes";
-import AccountRoutes from "./userApp/routes/AccountRoutes";
-import CheckoutRoutes from "./userApp/routes/CheckoutRoutes";
-// import AdminRoutes from "./admin/routes/AdminRoutes";
+/* --- 2. LAZY LOAD: SUB-ROUTERS --- */
+const AuthRoutes = lazy(() => import("./userApp/routes/AuthRoutes"));
+const AccountRoutes = lazy(() => import("./userApp/routes/AccountRoutes"));
+const CheckoutRoutes = lazy(() => import("./userApp/routes/CheckoutRoutes"));
 
-/* --- 1. PROFESSIONAL LOADING COMPONENT --- */
-const LoadingScreen = () => {
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
-      {/* Spinner */}
-      <div className="relative flex items-center justify-center">
-        {/* Outer Ring */}
-        <div className="w-12 h-12 border-4 border-gray-100 rounded-full"></div>
-        {/* Inner Spinning Ring (The smooth part) */}
-        <div className="absolute w-12 h-12 border-4 border-transparent border-t-black rounded-full animate-spin"></div>
-      </div>
-
-      {/* Text */}
-      <p className="mt-4 text-xs font-medium text-gray-400 uppercase tracking-widest animate-pulse">
-        Loading...
-      </p>
-    </div>
-  );
-};
+/* --- HELPER: FULL SCREEN LOADER --- */
+const FullScreenLoader = () => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+    <LoadingScreen />
+  </div>
+);
 
 const AppRoutes = () => {
   const { isLoggedIn, user, loading } = useAuth();
+  const location = useLocation();
 
-  // --- 2. USE THE NEW LOADER ---
-  if (loading) return <LoadingScreen />;
-
-  /* ================= ROLE-BASED PROTECTED ROUTES ================= */
+  /* =========================================================
+     🔒 PROTECTED ROUTE COMPONENT
+     Handles Redirects & Role Checks
+  ========================================================= */
   const ProtectedRoute = ({ children, adminOnly = false }) => {
-    if (!isLoggedIn) return <Navigate to="/auth/login" replace />;
-    if (adminOnly && user.role !== "admin") return <Navigate to="/" replace />;
-    return children;
+    // 1. Wait for Auth Check
+    if (loading) return <FullScreenLoader />;
+
+    // 2. Not Logged In? -> Go to Login
+    if (!isLoggedIn) {
+      return <Navigate to="/auth/login" state={{ from: location }} replace />;
+    }
+
+    // 3. Admin Route but User is not Admin? -> Go Home
+    if (adminOnly && user?.role !== "admin") {
+      return <Navigate to="/" replace />;
+    }
+
+    // 4. Access Granted
+    return children ? children : <Outlet />;
   };
 
   return (
-    <Routes>
-      {/* PUBLIC */}
-      <Route path="/auth/*" element={<AuthRoutes />} />
+    <Suspense fallback={<LoadingScreen />}>
+      <Routes>
+        {/* ====================================================
+            1. PUBLIC AUTH ROUTES (Login, Register, Forgot PW)
+            No Layout or Special Auth Layout
+        ==================================================== */}
+        <Route path="/auth/*" element={<AuthRoutes />} />
 
-      <Route path="/" element={<UserLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="/product/:slug" element={<ProductDetailsPage />} />
-      </Route>
+        {/* ====================================================
+            2. USER STOREFRONT ROUTES
+            Wrapped in UserLayout (Navbar + Footer)
+        ==================================================== */}
+        <Route element={<UserLayout />}>
+          {/* Public Store Pages */}
+          <Route index element={<HomePage />} />
+          <Route path="product/:slug" element={<ProductDetailsPage />} />
+          <Route path="contact-us" element={<ContactUsPage />} />
+          <Route path="wishlist" element={<WishlistPage />} />
 
-      <Route
-        path="/taruveda-organic-shampoo-oil/*"
-        element={<TaruvedaRoutes />}
-      />
+          {/* Protected User Pages */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="orders" element={<OrdersPage />} />
+            <Route path="user/*" element={<AccountRoutes />} />
+            <Route path="checkout/*" element={<CheckoutRoutes />} />
+          </Route>
+        </Route>
 
-      {/* USER ROUTES */}
-      <Route
-        path="/user/*"
-        element={
-          <ProtectedRoute>
-            <AccountRoutes />
-          </ProtectedRoute>
-        }
-      />
+        {/* ====================================================
+            3. ADMIN DASHBOARD ROUTES
+            Wrapped in AdminLayout (Sidebar + Admin Header)
+            Protected: adminOnly={true}
+        ==================================================== */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <AdminRoutes />
+            </ProtectedRoute>
+          }></Route>
 
-      <Route
-        path="/checkout/*"
-        element={
-          <ProtectedRoute>
-            <CheckoutRoutes />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* ADMIN ROUTES (Commented out as per your code)
-      <Route
-        path="/admin/*"
-        element={
-          <ProtectedRoute adminOnly={true}>
-             <AdminLayout>
-               <AdminRoutes />
-             </AdminLayout>
-          </ProtectedRoute>
-        }
-      /> */}
-
-      {/* FALLBACK */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* ====================================================
+            4. FALLBACK (404)
+        ==================================================== */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 };
 

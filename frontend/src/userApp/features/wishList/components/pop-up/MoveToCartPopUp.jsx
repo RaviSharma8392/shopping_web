@@ -2,29 +2,29 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import { Link } from "react-router-dom";
 import SizeSelector from "../../../../components/selector/SizeSelector";
-import { useCart } from "../../../../context/CartContext";
+import { useCart } from "../../../cart/context/CartContext";
 
 const MoveToCartPopUp = ({ onClose, product, onCompleted }) => {
   const [selectedSize, setSelectedSize] = useState(null);
+  const [error, setError] = useState(""); // Track validation error
 
-  const { add } = useCart();
+  const { addToCart } = useCart();
 
   const handleAdd = async () => {
-    await add({
-      productId: product.id,
-      name: product.name,
-      size: selectedSize,
-      sizes: product.sizes,
-      price: Number(product.price),
-      originalPrice: Number(product.originalPrice),
-      quantity: 1,
-      stock: product.stock,
-      image: product.images?.[0],
-      slug: product.slug,
+    // 1. Validation: If product has sizes, force user to pick one
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      setError("Please select a size");
+      return;
+    }
+
+    // 2. Add to Cart
+    await addToCart({
+      id: product.id,
+      selectedSize: selectedSize,
+      selectedQuantity: 1,
     });
 
     if (onCompleted) onCompleted();
-
     onClose();
   };
 
@@ -36,43 +36,38 @@ const MoveToCartPopUp = ({ onClose, product, onCompleted }) => {
       : 0;
 
   return (
-    <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
-      <div className="bg-white w-[92%] max-w-md rounded-lg shadow-xl p-5 relative animate-fadeIn">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-4">
+      <div className="bg-white w-full max-w-md rounded-t-2xl md:rounded-2xl shadow-xl p-6 relative animate-fadeIn">
         {/* CLOSE BUTTON */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 p-1 hover:bg-gray-200 rounded-full transition">
+          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition">
           <X size={20} />
         </button>
 
-        {/* TOP SECTION */}
-        <div className="hidden md:flex gap-4">
-          {/* IMAGE */}
-          <Link to={`/product/${product.slug}`} className="min-w-20">
+        {/* TOP SECTION (Product Info) */}
+        <div className="flex gap-4 mb-6">
+          <Link to={`/product/${product.slug}`} className="shrink-0">
             <img
               src={product.images?.[0] || product.banner || "/placeholder.jpg"}
               alt={product.name}
-              className="w-20 h-20 object-cover"
+              className="w-20 h-24 object-cover rounded-md border border-gray-100"
             />
           </Link>
 
-          {/* PRODUCT DETAILS */}
-          <div className="flex flex-col justify-center">
-            <Link to={`/product/${product.slug}`}>
-              <h3 className="text-sm text-gray-800 leading-tight line-clamp-2 hover:text-[#FF3F6C] transition">
-                {product.name}
-              </h3>
-            </Link>
+          <div className="flex flex-col py-1">
+            <h3 className="text-sm font-medium text-gray-900 leading-snug line-clamp-2">
+              {product.name}
+            </h3>
 
-            <div className="mt-2 flex items-center gap-2">
+            <div className="mt-2 flex items-baseline gap-2">
               <span className="text-lg font-bold text-gray-900">₹{price}</span>
-
               {originalPrice > price && (
                 <>
-                  <span className="line-through text-xs text-gray-500">
+                  <span className="line-through text-xs text-gray-400">
                     ₹{originalPrice}
                   </span>
-                  <span className="text-orange-500 text-xs">
+                  <span className="text-orange-600 text-xs font-semibold">
                     ({discount}% OFF)
                   </span>
                 </>
@@ -82,24 +77,42 @@ const MoveToCartPopUp = ({ onClose, product, onCompleted }) => {
         </div>
 
         {/* SIZE SELECTOR */}
-        {product.sizes && (
-          <div className="mt-6">
+        {product.sizes && product.sizes.length > 0 && (
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-sm font-bold text-gray-800">
+                Select Size
+              </span>
+              {error && (
+                <span className="text-xs text-red-500 font-medium animate-pulse">
+                  {error}
+                </span>
+              )}
+            </div>
             <SizeSelector
               sizes={product.sizes}
               selectedSize={selectedSize}
-              onSizeChange={setSelectedSize}
+              onSizeChange={(size) => {
+                setSelectedSize(size);
+                setError(""); // Clear error on select
+              }}
             />
           </div>
         )}
 
-        {/* DONE BUTTON */}
-        <div className="mt-8">
-          <button
-            onClick={handleAdd}
-            className="w-full py-2.5 bg-[#FF3F6C] text-white font-medium rounded-lg hover:bg-gray-900 transition">
-            Done
-          </button>
-        </div>
+        {/* ACTION BUTTON */}
+        <button
+          onClick={handleAdd}
+          className={`
+            w-full py-3.5 text-sm font-bold tracking-wide uppercase rounded-lg transition-all
+            ${
+              !product.sizes || selectedSize
+                ? "bg-[#FF3F6C] text-white hover:bg-[#e6355e] shadow-lg shadow-pink-200"
+                : "bg-gray-200 text-gray-500 cursor-not-allowed"
+            }
+          `}>
+          Done
+        </button>
       </div>
     </div>
   );

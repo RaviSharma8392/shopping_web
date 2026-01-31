@@ -2,14 +2,13 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { IMAGES } from "../../assets/images";
 import { COLORS } from "../../style/theme";
-import { signupUser } from "../firebase/firebaseauth";
+import { signupUser } from "../../userApp/features/auth/services/authService";
 
 const AdminSignupPage = () => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
+    name: "",
     email: "",
     password: "",
     phone: "",
@@ -79,9 +78,9 @@ const AdminSignupPage = () => {
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="flex gap-4">
               <input
-                name="firstName"
-                placeholder="First Name"
-                value={form.firstName}
+                name="name"
+                placeholder="Name"
+                value={form.name}
                 onChange={handleChange}
                 required
                 className="w-1/2 p-3 border rounded-lg focus:outline-none focus:ring-2"
@@ -90,7 +89,7 @@ const AdminSignupPage = () => {
                   "--tw-ring-color": COLORS.primary,
                 }}
               />
-
+              {/* 
               <input
                 name="lastName"
                 placeholder="Last Name"
@@ -102,7 +101,7 @@ const AdminSignupPage = () => {
                   borderColor: COLORS.secondary,
                   "--tw-ring-color": COLORS.primary,
                 }}
-              />
+              /> */}
             </div>
             <input
               type="tel"

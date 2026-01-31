@@ -1,217 +1,306 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../features/auth/context/UserContext";
+import { useAuth } from "../features/auth/context/UserContext"; // ✅ Auth Context
+import { useCart } from "../features/cart/context/CartContext";
+import { useLocation, Navigate } from "react-router-dom";
 import {
-  addDoc,
   collection,
-  doc,
-  getDoc,
+  addDoc,
+  getDocs,
   serverTimestamp,
-  setDoc,
-  updateDoc,
+  query,
+  orderBy,
 } from "firebase/firestore";
 import { db } from "../../config/firebase";
-import { useCart } from "../context/CartContext";
-import { useLocation } from "react-router-dom";
-import { useSelectedOrderData } from "../features/cart/hooks/useSelectedOrderData";
 
 import AddressForm from "../components/form/AddressForm";
 import AddressCard from "../components/cards/AddressCard";
 import CartSummary from "../features/cart/components/CartSummary";
 import PaymentConfirmationPopup from "../components/pop-up/PaymentConfirmationPopup";
+import { Loader2 } from "lucide-react";
 
 const AddressPage = () => {
-  const { user, isLoggedIn, updateUser } = useAuth();
-  const { cart, clear } = useCart();
+  // 🔥 Get User, Save Function, and Cached Address from Context
+  const { user, isLoggedIn, saveAddress, address: cachedAddress } = useAuth();
+  const { clear } = useCart();
   const location = useLocation();
 
-  const selectedIds = location.state?.selectedIds || [];
-  const { selectedItems, subtotal, originalTotal } = useSelectedOrderData(
-    cart,
-    selectedIds,
-  );
+  // 1. RETRIEVE DATA FROM CART
+  const { items, totalAmount } = location.state || {};
 
-  const [addresses, setAddresses] = useState([]); // list of addresses for this order
+  // Safety: Redirect if accessed directly without data
+  if (!items || items.length === 0) {
+    return <Navigate to="/cart" replace />;
+  }
+
+  const [addresses, setAddresses] = useState([]);
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null); // which address is being edited
-  const [popupVisible, setPopupVisible] = useState(false);
 
+  // Form State
   const [form, setForm] = useState({
     name: "",
     phone: "",
-    addressLine1: "",
-    addressLine2: "",
+    addressLine1: "", // Form UI uses this
     city: "",
     state: "",
     pincode: "",
+    id: null, // To track editing ID
   });
 
-  // ===============================
-  // Utility: sanitize object for Firestore (no undefined)
-  // ===============================
-  // Utility function to remove undefined and set defaults
+  const [popupVisible, setPopupVisible] = useState(false);
+
+  // Helper: Sanitize inputs (remove undefined)
   const sanitize = (obj) => {
     const sanitized = {};
     Object.entries(obj).forEach(([key, value]) => {
-      if (value === undefined || value === null) {
-        // set default value depending on type
-        sanitized[key] = key === "price" || key === "quantity" ? 0 : "";
-      } else {
-        sanitized[key] = value;
-      }
+      sanitized[key] = value ?? "";
     });
     return sanitized;
   };
 
-  // ===============================
-  // Load default address from Firestore
-  // ===============================
+  // 2. FETCH ALL ADDRESSES (Subcollection)
+  // We fetch the list because Context only holds the *Active* address
   useEffect(() => {
+    if (!user?.uid) return;
+
     const loadAddresses = async () => {
       setLoading(true);
-      const loadedAddresses = [];
+      try {
+        const q = query(
+          collection(db, "users", user.uid, "addresses"),
+          orderBy("createdAt", "desc"),
+        );
+        const snapshot = await getDocs(q);
 
-      if (user?.defaultAddressId) {
-        try {
-          const snap = await getDoc(
-            doc(db, "addresses", user.defaultAddressId),
-          );
-          if (snap.exists()) {
-            const data = snap.data();
-            loadedAddresses.push({
-              name: user.name || "",
-              phone: user.phone || "",
-              ...sanitize(data),
-            });
-          }
-        } catch (err) {
-          console.error("Failed to load default address:", err);
+        const loadedAddresses = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setAddresses(loadedAddresses);
+
+        // 🔥 Smart Select:
+        // 1. If we have a cached address in Context, find it in the list
+        // 2. Else use defaultAddressId from profile
+        const activeId = cachedAddress?.id || user.defaultAddressId;
+
+        if (activeId) {
+          const index = loadedAddresses.findIndex((a) => a.id === activeId);
+          if (index !== -1) setSelectedAddressIndex(index);
         }
+      } catch (err) {
+        console.error("Failed to load addresses:", err);
+      } finally {
+        setLoading(false);
       }
-
-      setAddresses(loadedAddresses);
-      setLoading(false);
     };
 
     loadAddresses();
-  }, [user]);
+  }, [user, cachedAddress]); // Re-run if context address changes
 
-  // ===============================
-  // Save new or edited address locally (and Firestore if no default)
-  // ===============================
-  const saveAddress = async () => {
-    const newAddress = { ...sanitize(form), savedAt: new Date().toISOString() };
+  // 3. HANDLE SAVE (Using Context)
+  const handleSaveAddress = async () => {
+    if (!user) return;
 
-    if (editingIndex !== null) {
-      // Editing existing address
-      const updated = [...addresses];
-      updated[editingIndex] = newAddress;
-      setAddresses(updated);
-      setEditingIndex(null);
-      setSelectedAddressIndex(editingIndex);
-    } else {
-      // Adding new address
-      setAddresses([...addresses, newAddress]);
-      setSelectedAddressIndex(addresses.length);
-    }
+    // Convert Form Data to DB Schema (line1 vs addressLine1)
+    const addressPayload = {
+      id: form.id, // Pass ID if editing, null if new
+      line1: form.addressLine1, // Map UI field to DB field
+      city: form.city,
+      state: form.state,
+      pincode: form.pincode,
+      name: form.name,
+      phone: form.phone,
+    };
 
-    setEditing(false);
+    try {
+      // 🔥 Call Context Function (Handles DB, Link, & LocalStorage)
+      const savedAddr = await saveAddress(addressPayload);
 
-    // Save to Firestore only if user has no default address yet
-    if (!user?.defaultAddressId && editingIndex === null) {
-      try {
-        const newRef = doc(collection(db, "addresses"));
-        await setDoc(newRef, {
-          ...newAddress,
-          userId: user.uid,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-        await updateDoc(doc(db, "users", user.uid), {
-          defaultAddressId: newRef.id,
-        });
-        updateUser({ defaultAddressId: newRef.id });
-      } catch (err) {
-        console.error("Failed to save default address:", err);
+      // Update Local List UI
+      if (form.id) {
+        // Edit Mode: Update item in list
+        setAddresses((prev) =>
+          prev.map((a) => (a.id === savedAddr.id ? savedAddr : a)),
+        );
+      } else {
+        // Create Mode: Add to top and select
+        setAddresses((prev) => [savedAddr, ...prev]);
+        setSelectedAddressIndex(0);
       }
+
+      setEditing(false);
+      setForm({
+        name: "",
+        phone: "",
+        addressLine1: "",
+        city: "",
+        state: "",
+        pincode: "",
+        id: null,
+      });
+    } catch (error) {
+      alert("Failed to save address. Please try again.");
     }
   };
 
-  // ===============================
-  // Place Order
-  // ===============================
+  // 4. 🔥 PLACE ORDER (Full Snapshot Details)
   const placeOrder = async () => {
-    if (!addresses[selectedAddressIndex]) {
-      alert("Please select an address");
+    // A. Validation
+    if (addresses.length === 0) {
+      alert("Please add an address first.");
       return;
     }
 
-    const selectedAddress = sanitize(addresses[selectedAddressIndex]);
+    if (!user) {
+      alert("You must be logged in to place an order.");
+      return;
+    }
+
+    const selectedAddress = addresses[selectedAddressIndex];
 
     try {
-      await addDoc(collection(db, "orders"), {
+      // B. Construct the Order Object (Snapshot Strategy)
+      const orderPayload = {
+        // 1. User Details Snapshot (Freezes user info at time of order)
         userId: user.uid,
-        address: selectedAddress,
-        items: selectedItems.map((i) =>
-          sanitize({
-            productId: i.id ?? "",
-            name: i.name ?? "",
-            image: i.images?.[0] ?? "",
-            price: i.price ?? 0,
-            quantity: i.quantity ?? 1,
-          }),
-        ),
-        subtotal: subtotal ?? 0,
-        platformFee: 50,
-        totalAmount: (subtotal ?? 0) + 50,
-        orderStatus: "PLACED",
-        createdAt: serverTimestamp(),
-      });
+        userSnapshot: {
+          name: user.name || "",
+          email: user.email || "",
+          phone: user.phone || "",
+        },
 
-      clear();
-      setPopupVisible(true);
+        // 2. Location Snapshot (Full Address Object)
+        // We save the full address object so it persists even if user deletes address later
+        deliveryAddress: sanitize({
+          line1: selectedAddress.line1 || selectedAddress.addressLine1 || "",
+          city: selectedAddress.city,
+          state: selectedAddress.state,
+          pincode: selectedAddress.pincode,
+          name: selectedAddress.name || user.name, // Contact Person
+          phone: selectedAddress.phone || user.phone, // Contact Phone
+        }),
+
+        // 3. Product Line Items (Snapshot)
+        items: items.map((item) => ({
+          productId: item.id,
+          name: item.name,
+          // Handle image array vs string safely
+          image: Array.isArray(item.images) ? item.images[0] : item.image || "",
+          price: Number(item.price),
+          quantity: Number(item.selectedQuantity || 1),
+          selectedSize: item.selectedSize || "N/A",
+          // Calculate total for this specific line item
+          lineTotal: Number(item.price) * Number(item.selectedQuantity || 1),
+        })),
+
+        // 4. Financials
+        subtotal: Number(totalAmount),
+        shippingFee: 0,
+        totalAmount: Number(totalAmount),
+
+        // 5. Order Metadata
+        status: "PLACED", // Enums: PLACED, PACKED, SHIPPED, DELIVERED, CANCELLED
+        paymentMethod: "COD",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      // C. Save to Firestore
+      const docRef = await addDoc(collection(db, "orders"), orderPayload);
+      console.log("Order placed successfully! ID:", docRef.id);
+
+      // D. Cleanup
+      await clear(); // Clear Cart Context & DB
+      setPopupVisible(true); // Show Success Modal
     } catch (err) {
-      console.error("Order error:", err);
-      alert("Failed to place order");
+      console.error("Failed to place order:", err);
+      alert("Failed to place order. Please try again.");
     }
   };
 
-  // ===============================
-  // Render
-  // ===============================
-  if (!isLoggedIn) return <h2 className="text-center mt-20">Please login</h2>;
-  if (selectedItems.length === 0)
-    return <h2 className="text-center mt-20">No items selected</h2>;
+  if (!isLoggedIn)
+    return <div className="p-10 text-center">Please log in to continue.</div>;
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <Loader2 className="animate-spin text-gray-400" size={32} />
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-5xl mx-auto md:flex gap-6 pt-8">
-      <div className="flex-1 bg-white p-5 rounded-xl">
-        <h3 className="font-semibold mb-4">Delivery Address</h3>
+    <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-8 font-[Poppins]">
+      {/* LEFT: Address Management */}
+      <div className="flex-1 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <h3 className="text-xl font-semibold mb-6">Delivery Address</h3>
 
-        {loading ? (
-          <p className="text-gray-500">Loading address...</p>
-        ) : editing ? (
-          <AddressForm form={form} setForm={setForm} onSave={saveAddress} />
+        {editing ? (
+          <AddressForm
+            form={form}
+            setForm={setForm}
+            onSave={handleSaveAddress} // Use our wrapper
+            onCancel={() => {
+              setEditing(false);
+              setForm({
+                name: "",
+                phone: "",
+                addressLine1: "",
+                city: "",
+                state: "",
+                pincode: "",
+                id: null,
+              });
+            }}
+          />
         ) : (
           <div className="space-y-4">
             {addresses.map((addr, idx) => (
-              <div key={idx} className="border p-4 rounded-lg relative">
-                <input
-                  type="radio"
-                  name="selectedAddress"
-                  checked={selectedAddressIndex === idx}
-                  onChange={() => setSelectedAddressIndex(idx)}
-                  className="absolute top-3 left-3"
-                />
-                <AddressCard
-                  address={addr}
-                  onEdit={() => {
-                    setEditing(true);
-                    setEditingIndex(idx);
-                    setForm(addr);
-                  }}
-                />
+              <div
+                key={addr.id}
+                onClick={() => {
+                  setSelectedAddressIndex(idx);
+                  // Optional: Update global context when user clicks a card
+                  saveAddress({ ...addr, id: addr.id });
+                }}
+                className={`border p-4 rounded-lg relative cursor-pointer transition-all ${
+                  selectedAddressIndex === idx
+                    ? "border-black bg-gray-50 ring-1 ring-black"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}>
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`mt-1 w-4 h-4 rounded-full border flex items-center justify-center ${
+                      selectedAddressIndex === idx
+                        ? "border-black"
+                        : "border-gray-400"
+                    }`}>
+                    {selectedAddressIndex === idx && (
+                      <div className="w-2 h-2 rounded-full bg-black" />
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <AddressCard
+                      address={{
+                        ...addr,
+                        // Map DB fields back to UI expected fields if AddressCard expects addressLine1
+                        addressLine1: addr.line1 || addr.addressLine1,
+                      }}
+                      onEdit={(e) => {
+                        e.stopPropagation();
+                        setEditing(true);
+                        setForm({
+                          ...addr,
+                          addressLine1: addr.line1 || addr.addressLine1, // Map back
+                          id: addr.id,
+                        });
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             ))}
 
@@ -221,33 +310,36 @@ const AddressPage = () => {
                   name: user.name || "",
                   phone: user.phone || "",
                   addressLine1: "",
-                  addressLine2: "",
                   city: "",
                   state: "",
                   pincode: "",
+                  id: null,
                 });
                 setEditing(true);
-                setEditingIndex(null);
               }}
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg transition">
-              Add New Address
+              className="w-full mt-4 bg-white hover:bg-gray-50 text-gray-800 font-medium py-4 rounded-xl transition border-2 border-dashed border-gray-300 flex items-center justify-center gap-2">
+              <span>+</span> Add New Address
             </button>
           </div>
         )}
       </div>
 
-      <CartSummary
-        subtotal={subtotal}
-        originalTotalPrice={originalTotal}
-        platformFee={50}
-        selectedItems={selectedItems}
-        onPlaceOrder={placeOrder}
-      />
+      {/* RIGHT: Order Summary */}
+      <div className="md:w-96 h-fit sticky top-24">
+        <CartSummary
+          subtotal={totalAmount}
+          originalTotalPrice={totalAmount}
+          platformFee={0}
+          selectedItems={items}
+          onPlaceOrder={placeOrder}
+          btnText="Place Order"
+        />
+      </div>
 
       <PaymentConfirmationPopup
         visible={popupVisible}
         onClose={() => setPopupVisible(false)}
-        whatsappNumber="63868368"
+        whatsappNumber="919999999999"
         userId={user.uid}
       />
     </div>

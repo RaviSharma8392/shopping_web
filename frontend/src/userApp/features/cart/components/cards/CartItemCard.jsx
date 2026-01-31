@@ -1,16 +1,30 @@
 import { Link } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import QuantityPopup from "../../../../components/pop-up/QuantityPopup";
 import SizePopup from "../../../../components/pop-up/SizePopup";
 import { ChevronDown, Info, X, Check } from "lucide-react";
 
-const CartItemCard = ({ product, onRemove, onSelect, selected }) => {
-  const [quantity, setQuantity] = useState(product.quantity || 1);
-  const [selectedSize, setSelectedSize] = useState(product.size || "");
+const CartItemCard = ({
+  product,
+  onRemove,
+  onSelect,
+  selected,
+  onQtyChange,
+  onSizeChange,
+}) => {
+  // Use local state for UI, but always sync with cart context
+  const [selectedQuantity, setQuantity] = useState(
+    product.selectedQuantity || 1,
+  );
+  const [selectedSize, setSelectedSize] = useState(product.selectedSize || "");
   const [showQuantityPopup, setShowQuantityPopup] = useState(false);
   const [showSizePopup, setShowSizePopup] = useState(false);
 
-  console.log(product);
+  useEffect(() => {
+    setQuantity(product.selectedQuantity || 1); // sync with context updates
+    setSelectedSize(product.selectedSize || "");
+  }, [product.selectedQuantity, product.selectedSize]);
+
   const price = Number(product.price);
   const originalPrice = Number(product.originalPrice);
   const discount =
@@ -18,16 +32,27 @@ const CartItemCard = ({ product, onRemove, onSelect, selected }) => {
       ? Math.round(((originalPrice - price) / originalPrice) * 100)
       : 0;
 
+  // Handle quantity changes
   const handleQuantityChange = (action) => {
-    if (action === "increment") {
-      setQuantity((prev) => prev + 1);
-    } else if (action === "decrement" && quantity > 1) {
-      setQuantity((prev) => prev - 1);
-    }
+    setQuantity((prev) => {
+      let newQty = prev;
+      if (action === "increment") newQty = prev + 1;
+      else if (action === "decrement" && prev > 1) newQty = prev - 1;
+
+      if (onQtyChange) onQtyChange(newQty); // update context / IndexedDB
+
+      return newQty;
+    });
+  };
+
+  // Handle size selection
+  const handleSizeChange = (size) => {
+    setSelectedSize(size); // local UI
+    if (onSizeChange) onSizeChange(size); // update context / IndexedDB
   };
 
   return (
-    <div className="bg-white w-full md:max-w-2xl  rounded-lg shadow-sm p-4  flex gap-4 relative">
+    <div className="bg-white w-full md:max-w-2xl rounded-lg shadow-sm p-4 flex gap-4 relative">
       {/* Remove Button */}
       <button
         onClick={() => onRemove(product.id)}
@@ -39,25 +64,24 @@ const CartItemCard = ({ product, onRemove, onSelect, selected }) => {
       <div className="relative min-w-[20]">
         <Link to={`/product/${product.slug}`}>
           <img
-            src={product.image}
+            src={product.banner}
             alt={product.name}
             className="w-30 h-35 object-cover rounded"
           />
         </Link>
         {/* Select Tick Button */}
-        {/* <button
+        <button
           onClick={() => onSelect(product)}
           className="flex absolute top-1 left-1 items-center gap-1 px-2 py-1 uppercase transition">
           <Check
             size={18}
-            className={`p-0.5 text-white  rounded-sm border transition-colors
-            ${
+            className={`p-0.5 text-white rounded-sm border transition-colors ${
               selected
                 ? "bg-[#ff356c] text-white border-none font-bold"
                 : "bg-white border border-gray-400 text-2xl"
             }`}
           />
-        </button> */}
+        </button>
       </div>
 
       {/* PRODUCT DETAILS */}
@@ -85,7 +109,7 @@ const CartItemCard = ({ product, onRemove, onSelect, selected }) => {
           <button
             onClick={() => setShowQuantityPopup(true)}
             className="flex items-center gap-1 px-2 py-1 font-semibold text-xs bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition">
-            Qty: {quantity}
+            Qty: {selectedQuantity}
             <ChevronDown className="w-3 h-3" />
           </button>
 
@@ -106,7 +130,7 @@ const CartItemCard = ({ product, onRemove, onSelect, selected }) => {
         {/* Popups */}
         {showQuantityPopup && (
           <QuantityPopup
-            quantity={quantity}
+            quantity={selectedQuantity}
             handleQuantityChange={handleQuantityChange}
             stock={product.qty || 10}
             onClose={() => setShowQuantityPopup(false)}
@@ -116,7 +140,7 @@ const CartItemCard = ({ product, onRemove, onSelect, selected }) => {
           <SizePopup
             sizes={product.sizes}
             selectedSize={selectedSize}
-            onSizeChange={(size) => setSelectedSize(size)}
+            onSizeChange={handleSizeChange}
             onClose={() => setShowSizePopup(false)}
           />
         )}

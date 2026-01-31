@@ -26,9 +26,8 @@ const BottomNavbar = () => {
     { name: "New", path: "/new", icon: <Sparkles size={20} /> },
     {
       name: "Wishlist",
-      path: "/user/wishlist",
+      path: "/wishlist",
       icon: <Heart size={20} />,
-      protected: true,
     },
     {
       name: "Profile",
@@ -39,7 +38,7 @@ const BottomNavbar = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full bg-white shadow-2xl border-t border-gray-200 z-[999] rounded-t-2xl">
+    <nav className="fixed md:hidden bottom-0 left-0 w-full bg-white shadow-2xl border-t border-gray-200 z-30 rounded-t-2xl">
       <ul className="flex justify-around items-center py-2">
         {navItems.map((item) => (
           <li key={item.name}>

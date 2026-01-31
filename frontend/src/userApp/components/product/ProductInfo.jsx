@@ -1,5 +1,12 @@
 import React, { useMemo } from "react";
-import { ShoppingBag, Zap, ShieldCheck, Heart } from "lucide-react";
+import {
+  ShoppingBag,
+  Zap,
+  ShieldCheck,
+  Heart,
+  Truck,
+  RefreshCcw,
+} from "lucide-react";
 import { TrustBadges } from "../badges/TrustBadges";
 import CustomButton from "../button/CustomButton";
 import { ShareSection } from "../section/ShareSectionNew";
@@ -13,18 +20,16 @@ const ProductInfo = ({
   discount,
   renderStars,
   formatPrice,
-  selectedColor,
-  setSelectedColor,
+
   selectedSize,
   setSelectedSize,
   quantity,
-  handleQuantityChange,
+  setQuantity, // Changed from handleQuantityChange to match typical useState setter
   handleAddToCart,
   handleBuyNow,
   handleWishlistToggle,
-  isLiked,
+  isWishlisted, // Changed from isLiked to match parent
   isAdding,
-  isActive,
 }) => {
   // Logic for low stock warning
   const isLowStock = useMemo(
@@ -33,28 +38,33 @@ const ProductInfo = ({
   );
 
   return (
-    <div className="space-y-8 font-inter animate-in fade-in slide-in-from-right-4 duration-700">
+    <div className="space-y-8 font-sans animate-in fade-in slide-in-from-right-4 duration-700">
       {/* 1. Header & Rating */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between gap-4">
+      <div className="space-y-4">
+        <div className="flex items-start justify-between gap-4">
           <h1 className="text-2xl md:text-4xl font-serif font-medium text-gray-900 leading-tight">
             {product.name}
           </h1>
           <button
             onClick={handleWishlistToggle}
-            className={`p-2.5 rounded-full border transition-all duration-300 ${
-              isLiked
-                ? "bg-red-50 border-red-100 text-red-500"
-                : "bg-white border-gray-100 text-gray-400 hover:text-black"
+            className={`p-3 rounded-full border transition-all duration-300 hover:scale-110 active:scale-95 flex-shrink-0 ${
+              isWishlisted
+                ? "bg-red-50 border-red-100 text-red-500 shadow-sm"
+                : "bg-white border-gray-100 text-gray-400 hover:text-red-500 hover:border-red-100"
             }`}>
-            <Heart size={20} fill={isLiked ? "currentColor" : "none"} />
+            <Heart
+              size={20}
+              fill={isWishlisted ? "currentColor" : "none"}
+              strokeWidth={2}
+            />
           </button>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4 text-sm">
           {renderStars(product.rating || 4.5)}
-          <span className="text-[11px] uppercase tracking-widest text-gray-400 border-l pl-3 border-gray-200">
-            {product.sku || "MN-0921"}
+          <div className="h-4 w-[1px] bg-gray-200" />
+          <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">
+            SKU: {product.sku || "MN-0000"}
           </span>
         </div>
 
@@ -65,22 +75,21 @@ const ProductInfo = ({
         />
       </div>
 
-      <div className="h-[1px] bg-gradient-to-r from-gray-100 via-gray-50 to-transparent" />
+      <div className="h-[1px] bg-gradient-to-r from-gray-200 via-gray-100 to-transparent" />
 
       {/* 2. Selection Controls */}
-      <div className="space-y-6">
-        {product.colors?.length > 0 && (
-          <div className="space-y-3">
-            <ColorSelector
-              colors={product.colors}
-              selectedColor={selectedColor}
-              onColorChange={setSelectedColor}
-            />
-          </div>
-        )}
-
+      <div className="space-y-8">
+        {/* Size Selector */}
         {product.sizes?.length > 0 && (
           <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-900">
+                Select Size
+              </span>
+              <button className="text-xs text-red-600 font-bold underline decoration-red-200 underline-offset-4 hover:text-red-700">
+                Size Chart
+              </button>
+            </div>
             <SizeSelector
               sizes={product.sizes}
               selectedSize={selectedSize}
@@ -89,67 +98,87 @@ const ProductInfo = ({
           </div>
         )}
 
-        <div className="flex items-end gap-6">
+        {/* Quantity & Stock */}
+        <div className="flex items-end gap-8">
           <div className="space-y-3">
-            <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400">
+            <label className="text-xs font-bold uppercase tracking-widest text-gray-900 block">
               Quantity
             </label>
             <QuantitySelector
               quantity={quantity}
-              handleQuantityChange={handleQuantityChange}
+              handleQuantityChange={setQuantity}
               stock={product.stock || 10}
             />
           </div>
 
           {/* Low Stock Indicator */}
           {isLowStock && (
-            <p className="text-xs text-amber-600 font-medium pb-2 animate-pulse">
-              Only {product.stock} left in stock!
-            </p>
+            <div className="pb-3 flex items-center gap-2 text-amber-600 animate-pulse">
+              <Zap size={14} fill="currentColor" />
+              <p className="text-xs font-bold">Only {product.stock} left!</p>
+            </div>
           )}
         </div>
       </div>
 
       {/* 3. Primary Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+      <div className="hidden md:flex flex-col sm:flex-row gap-4 pt-4">
         <CustomButton
-          text={isAdding ? "Adding..." : "Add to Bag"}
-          icon={<ShoppingBag className="w-4 h-4" strokeWidth={1.5} />}
+          text={isAdding ? "Adding..." : "Add to Cart"}
+          icon={<ShoppingBag className="w-5 h-5" strokeWidth={2} />}
           loading={isAdding}
           onClick={handleAddToCart}
-          disabled={!isActive}
-          className="w-full h-14 rounded-full uppercase text-[11px] tracking-[0.2em] font-bold transition-all duration-500 hover:shadow-xl hover:-translate-y-1"
-          bgColor="#000000"
+          className="flex-1 h-14 rounded-full uppercase text-xs tracking-[0.15em] font-bold shadow-lg shadow-gray-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm"
+          bgColor="#111827" // Tailwind Gray-900
           textColor="text-white"
         />
 
         <CustomButton
-          text="Instant Checkout"
-          icon={<Zap className="w-4 h-4" strokeWidth={1.5} />}
+          text="Add to Wishlist"
+          icon={<Zap className="w-5 h-5" strokeWidth={2} />}
           onClick={handleBuyNow}
-          disabled={!isActive}
-          className="w-full h-14 rounded-full uppercase text-[11px] tracking-[0.2em] font-bold border-2 border-black hover:bg-gray-50 transition-all"
-          bgColor="transparent"
-          textColor="text-black"
+          className="flex-1 h-14 rounded-full uppercase text-xs tracking-[0.15em] font-bold border-2 border-gray-900 hover:bg-gray-50 transition-all duration-300"
+          bgColor="white"
+          textColor="text-gray-900"
         />
       </div>
 
       {/* 4. Secondary Trust & Share */}
-      <div className="pt-6 space-y-6">
-        <div className="flex items-center gap-6 py-4 border-y border-gray-50">
-          <div className="flex items-center gap-2 text-[10px] uppercase font-bold text-gray-500">
-            <ShieldCheck size={16} className="text-green-600" />
-            <span>Secure Payment</span>
+      <div className="pt-8 space-y-6">
+        {/* Mini Features */}
+        {/* <div className="grid grid-cols-2 gap-4 py-6 border-y border-gray-100">
+          <div className="flex items-center gap-3">
+            <Truck size={20} className="text-gray-400" />
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-gray-900 uppercase">
+                Free Shipping
+              </span>
+              <span className="text-[10px] text-gray-500">
+                On orders over ₹999
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-[10px] uppercase font-bold text-gray-500">
-            <Zap size={16} className="text-amber-500" />
-            <span>Fast Dispatch</span>
+          <div className="flex items-center gap-3">
+            <RefreshCcw size={20} className="text-gray-400" />
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-gray-900 uppercase">
+                Easy Returns
+              </span>
+              <span className="text-[10px] text-gray-500">
+                7-day return policy
+              </span>
+            </div>
           </div>
+        </div> */}
+
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
+            Share this product
+          </span>
+          <ShareSection />
         </div>
 
-        <ShareSection />
-
-        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+        <div className="p-5 bg-gray-50 rounded-xl border border-gray-100/50">
           <TrustBadges />
         </div>
       </div>
