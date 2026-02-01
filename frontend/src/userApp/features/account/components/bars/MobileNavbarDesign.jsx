@@ -103,7 +103,7 @@ const MobileNavbar = ({ cartCount = 0, promoData }) => {
 
             {/* Cart */}
             <NavLink
-              to="/user/cart"
+              to="/checkout/cart"
               className="relative hover:opacity-70 transition-opacity"
               aria-label="Cart">
               <ShoppingBag size={22} strokeWidth={2} />
