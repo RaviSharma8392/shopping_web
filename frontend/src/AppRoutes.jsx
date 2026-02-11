@@ -6,6 +6,7 @@ import { useAuth } from "./userApp/features/auth/context/UserContext";
 import UserLayout from "./userApp/layouts/UserLayout";
 import LoadingScreen from "./userApp/components/loading/LoadingScreen";
 import AdminRoutes from "./admin";
+import TaruvedaRoutes from "./userApp/routes/TaruvedaRoutes";
 
 /* --- 1. LAZY LOAD: USER PAGES --- */
 const HomePage = lazy(() => import("./userApp/pages/HomePage"));
@@ -64,6 +65,10 @@ const AppRoutes = () => {
             No Layout or Special Auth Layout
         ==================================================== */}
         <Route path="/auth/*" element={<AuthRoutes />} />
+        <Route
+          path="/taruveda-organic-shampoo-oil*"
+          element={<TaruvedaRoutes />}
+        />
 
         {/* ====================================================
             2. USER STOREFRONT ROUTES

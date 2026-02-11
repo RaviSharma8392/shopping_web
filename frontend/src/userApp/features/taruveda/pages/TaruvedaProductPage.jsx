@@ -36,7 +36,7 @@ export default function TaruvedaProductPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await productService.getProducts();
+        const data = await productService.getTaruvedaProducts();
         setProducts(data);
       } catch (error) {
         console.error(error);
@@ -124,9 +124,11 @@ export default function TaruvedaProductPage() {
             <button className="text-gray-600 hover:text-green-800">
               <Search className="w-5 h-5" />
             </button>
-            <button className="hidden md:block text-gray-600 hover:text-green-800">
+            <Link
+              to={"/user/profile"}
+              className="hidden md:block text-gray-600 hover:text-green-800">
               <User className="w-5 h-5" />
-            </button>
+            </Link>
             <Link
               to={`${BASE_URL}/cart`}
               className="relative text-gray-600 hover:text-green-800 group">

@@ -19,8 +19,9 @@ export default function TaruVedaCartPage() {
   const { isLoggedIn } = useAuth();
 
   const cartItems = getCartItems();
+  console.log(cartItems);
   const totalAmount = cartItems.reduce(
-    (acc, item) => acc + item.price * item.qty,
+    (acc, item) => acc + item.price * item.quantity,
     0,
   );
 
@@ -75,7 +76,7 @@ export default function TaruVedaCartPage() {
                 <div className="flex-1 flex flex-col justify-between py-1">
                   <div className="flex justify-between">
                     <h3 className="font-bold text-sm">{item.name}</h3>
-                    <p className="font-bold">₹{item.price * item.qty}</p>
+                    <p className="font-bold">₹{item.price * item.quantity}</p>
                   </div>
                   <div className="flex items-center justify-between mt-2">
                     <p className="text-xs text-stone-500">₹{item.price} each</p>
@@ -85,7 +86,9 @@ export default function TaruVedaCartPage() {
                         className="px-3 hover:bg-stone-200 rounded-l-lg">
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="px-2 text-xs font-bold">{item.qty}</span>
+                      <span className="px-2 text-xs font-bold">
+                        {item.quantity}
+                      </span>
                       <button
                         onClick={() => updateCartQty(item.id, 1)}
                         className="px-3 hover:bg-stone-200 rounded-r-lg">

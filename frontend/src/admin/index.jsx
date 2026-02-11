@@ -16,6 +16,7 @@ import TestimonialsAdminPage from "./pages/TestimonialsAdminPage";
 import AdminCollectionPage from "./pages/AdminCollectionPage";
 import AdminOrdersPage from "./pages/AdminOrderDetailsPage";
 import AdminSignupPage from "./pages/AdminSignUpPage";
+import TaruvedaAdminCreateProduct from "./pages/TaruvedaAdminCreateProduct";
 
 const AdminRoutes = () => {
   return (
@@ -38,6 +39,10 @@ const AdminRoutes = () => {
         {/* ✅ Product */}
         <Route path="products" element={<ProductsManagementPage />} />
         <Route path="products/create" element={<ProductCreatePage />} />
+        <Route
+          path="taruveda/create"
+          element={<TaruvedaAdminCreateProduct />}
+        />
         <Route path="products/edit/:id" element={<ProductCreatePage />} />
         <Route path="testimonial" element={<TestimonialsAdminPage />} />{" "}
         <Route path="collection" element={<AdminCollectionPage />} />
