@@ -5,8 +5,11 @@ import { useAuth } from "./userApp/features/auth/context/UserContext";
 /* --- LAYOUTS (Eager Load to prevent layout shift) --- */
 import UserLayout from "./userApp/layouts/UserLayout";
 import LoadingScreen from "./userApp/components/loading/LoadingScreen";
-import AdminRoutes from "./admin";
+import AdminRoutes from "./admin/routes/AdminOrderRoutes";
 import TaruvedaRoutes from "./userApp/routes/TaruvedaRoutes";
+import AdminInquiryRoutes from "./admin/routes/adminInquiryRoutes";
+import AdminLayoutRoutes from "./admin/routes/adminLayoutRoutes";
+import AdminOrderRoutes from "./admin/routes/AdminOrderRoutes";
 
 /* --- 1. LAZY LOAD: USER PAGES --- */
 const HomePage = lazy(() => import("./userApp/pages/HomePage"));
@@ -65,6 +68,8 @@ const AppRoutes = () => {
             No Layout or Special Auth Layout
         ==================================================== */}
         <Route path="/auth/*" element={<AuthRoutes />} />
+        <Route path="/contact-us" element={<ContactUsPage />} />
+
         <Route
           path="/taruveda-organic-shampoo-oil*"
           element={<TaruvedaRoutes />}
@@ -78,7 +83,6 @@ const AppRoutes = () => {
           {/* Public Store Pages */}
           <Route index element={<HomePage />} />
           <Route path="product/:slug" element={<ProductDetailsPage />} />
-          <Route path="contact-us" element={<ContactUsPage />} />
           <Route path="wishlist" element={<WishlistPage />} />
 
           {/* Protected User Pages */}
@@ -96,11 +100,13 @@ const AppRoutes = () => {
         ==================================================== */}
         <Route
           path="/admin/*"
-          element={
-            <ProtectedRoute adminOnly={true}>
-              <AdminRoutes />
-            </ProtectedRoute>
-          }></Route>
+          element={<ProtectedRoute adminOnly={true}></ProtectedRoute>}>
+          {/* Main Admin Layout Section */}
+          <Route path="*" element={<AdminLayoutRoutes />} />{" "}
+          {/* Inquiry Section */}
+          <Route path="customers/*" element={<AdminInquiryRoutes />} />
+          <Route path="orders/*" element={<AdminOrderRoutes />} />
+        </Route>
 
         {/* ====================================================
             4. FALLBACK (404)

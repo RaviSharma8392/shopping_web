@@ -17,11 +17,26 @@ import AdminCollectionPage from "./pages/AdminCollectionPage";
 import AdminOrdersPage from "./pages/AdminOrderDetailsPage";
 import AdminSignupPage from "./pages/AdminSignUpPage";
 import TaruvedaAdminCreateProduct from "./pages/TaruvedaAdminCreateProduct";
+import AdminMessages from "./pages/AdminMessages";
+import AdminInquiryLayout from "./layouts/AdminInquiryLayout";
 
 const AdminRoutes = () => {
   return (
     <Routes>
       {/* ✅ All admin pages share AdminLayout */}
+      <Route path="message" element={<AdminMessages />} />{" "}
+      <Route path="" element={<AdminInquiryLayout />}>
+        {/* Default /admin loads Overview */}
+        <Route index element={<AdminOverview />} />
+
+        {/* /admin/messages loads Messages */}
+        <Route path="messages" element={<AdminMessages />} />
+
+        {/* /admin/customers loads Customers */}
+        <Route path="customers" element={<AdminCustomers />} />
+
+        {/* Add more admin pages here */}
+      </Route>
       <Route path="" element={<AdminLayout />}>
         {/* ✅ Dashboard */}
         <Route index element={<AdminDashboard />} />
@@ -47,7 +62,6 @@ const AdminRoutes = () => {
         <Route path="testimonial" element={<TestimonialsAdminPage />} />{" "}
         <Route path="collection" element={<AdminCollectionPage />} />
       </Route>
-
       {/* ✅ Fallback in case someone hits something wrong */}
       <Route path="*" element={<h1>Not Found</h1>} />
     </Routes>
