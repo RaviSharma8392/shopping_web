@@ -10,6 +10,7 @@ import TaruvedaRoutes from "./userApp/routes/TaruvedaRoutes";
 import AdminInquiryRoutes from "./admin/routes/adminInquiryRoutes";
 import AdminLayoutRoutes from "./admin/routes/adminLayoutRoutes";
 import AdminOrderRoutes from "./admin/routes/AdminOrderRoutes";
+import CategoriesPage from "./userApp/features/category/pages/CategoriesPage";
 
 /* --- 1. LAZY LOAD: USER PAGES --- */
 const HomePage = lazy(() => import("./userApp/pages/HomePage"));
@@ -84,14 +85,15 @@ const AppRoutes = () => {
           <Route index element={<HomePage />} />
           <Route path="product/:slug" element={<ProductDetailsPage />} />
           <Route path="wishlist" element={<WishlistPage />} />
+          <Route path="categories" element={<CategoriesPage />} />
 
           {/* Protected User Pages */}
           <Route element={<ProtectedRoute />}>
             <Route path="orders" element={<OrdersPage />} />
-            <Route path="user/*" element={<AccountRoutes />} />
             <Route path="checkout/*" element={<CheckoutRoutes />} />
           </Route>
         </Route>
+        <Route path="user/*" element={<AccountRoutes />} />
 
         {/* ====================================================
             3. ADMIN DASHBOARD ROUTES

@@ -1,27 +1,40 @@
+import React from "react";
 import { Outlet } from "react-router-dom";
-import UserNavbar from "../features/account/components/bars/UserNavbar";
-import { accountMenuData } from "../features/account/data/accountMenuData";
-import AccountSidebar from "../features/account/components/bars/AccountSidebar";
 
 const AccountLayout = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <UserNavbar />
+    <div className="min-h-screen bg-[#f1f3f6] font-sans">
+      {/* AMAZON/FLIPKART PLAN:
+         - Removed Sidebar for a single-column focus.
+         - Background #f1f3f6 makes the white content sections look premium.
+         - Max-width 4xl (960px) is the sweet spot for account pages.
+      */}
 
-      {/* Main Content */}
-      <div className="mt-23 md:mt-55 max-w-7xl mx-auto  sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar */}
-          <div className=" hidden md:flex lg:w-1/3 xl:w-1/4">
-            <AccountSidebar menuItems={accountMenuData} />
+      <main className="max-w-4xl mx-auto min-h-screen flex flex-col">
+        {/* Main Content Area */}
+        <section className="flex-1 bg-white shadow-sm md:shadow-md md:mt-4 md:mb-8 md:rounded-lg overflow-hidden border-x border-b border-gray-100 md:border-t">
+          <Outlet />
+        </section>
+
+        {/* Amazon-style Minimalist Footer */}
+        <footer className="py-10 px-6 text-center">
+          <div className="flex justify-center gap-6 mb-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            <button className="hover:text-gray-600 transition-colors">
+              Conditions of Use
+            </button>
+            <button className="hover:text-gray-600 transition-colors">
+              Privacy Notice
+            </button>
+            <button className="hover:text-gray-600 transition-colors">
+              Help
+            </button>
           </div>
 
-          {/* Dynamic Content Area */}
-          <div className=" lg:w-2/3 xl:w-3/4">
-            <Outlet />
-          </div>
-        </div>
-      </div>
+          <p className="text-[11px] text-gray-400 font-medium">
+            © 2026 Mnmukt Organics. All rights reserved.
+          </p>
+        </footer>
+      </main>
     </div>
   );
 };

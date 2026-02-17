@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import AccountLayout from "../layouts/AccountLayout";
-import ProfilePage from "../pages/ProfilePage";
 import EditProfilePage from "../features/userProfile/pages/EditProfilePage";
+import ProfilePage from "../pages/ProfilePage";
 
 export default function AccountRoutes() {
   return (
