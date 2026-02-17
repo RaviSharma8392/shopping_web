@@ -7,10 +7,9 @@ import {
   MapPin,
   Mail,
   Phone,
-  Instagram,
-  Facebook,
+  MessageSquare,
+  ChevronRight,
   CheckCircle2,
-  AlertCircle,
   X,
 } from "lucide-react";
 
@@ -18,13 +17,11 @@ const ContactUsPage = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "", // Added Phone
-    orderId: "", // Added Order ID
-    subject: "General Inquiry",
+    phone: "",
+    orderId: "",
     message: "",
   });
-
-  const [status, setStatus] = useState("idle"); // idle | loading | success | error
+  const [status, setStatus] = useState("idle");
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,115 +29,92 @@ const ContactUsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus("loading");
-
     try {
       await addDoc(collection(db, "contactMessages"), {
         ...formData,
         brand: "MNMUKT",
-        theme: "Blanc",
         createdAt: serverTimestamp(),
       });
-
       setStatus("success");
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        orderId: "",
-        subject: "General Inquiry",
-        message: "",
-      });
-
-      // Auto-dismiss alert after 6 seconds
+      setFormData({ name: "", email: "", phone: "", orderId: "", message: "" });
       setTimeout(() => setStatus("idle"), 6000);
     } catch (err) {
-      console.error(err);
       setStatus("error");
     }
   };
 
   return (
-    <div className="h-screen bg-gray-50 text-gray-900 font-sans selection:bg-black selection:text-white flex items-center justify-center p-0 md:p-8">
-      <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden bg-white md:rounded-3xl md:shadow-2xl md:shadow-gray-200/50">
-        {/* LEFT: The Form Area */}
-        <div className="bg-white/80 md:backdrop-blur-md p-8 md:p-16 lg:p-20 flex flex-col justify-center relative">
-          {/* Subtle Background Texture */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent opacity-50"></div>
+    <div className="min-h-screen bg-[#F1F3F6] font-sans pb-12">
+      {/* 1. TOP NAV BAR (Amazon Squid Ink) */}
+      <div className="bg-[#232F3E] text-white p-5 pt-12">
+        <h1 className="text-xl font-bold">Contact Customer Service</h1>
+        <p className="text-xs opacity-80 mt-1">We are here to help 24/7</p>
+      </div>
 
-          <div className="mb-10">
-            <h5 className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase mb-4">
-              Customer Service
-            </h5>
-            <h1 className="text-4xl md:text-5xl font-light tracking-tight text-black mb-6 leading-tight">
-              How may we <br /> assist you?
-            </h1>
-            <p className="text-gray-500 max-w-sm leading-relaxed">
-              For styling advice, order inquiries, or brand information. Our
-              concierge team is at your disposal.
-            </p>
+      <main className="max-w-4xl mx-auto md:p-6">
+        {/* 2. QUICK CONTACT TILES (Amazon Type) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 -mt-6">
+          <a
+            href="https://wa.me/919899990772"
+            className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between active:bg-gray-50">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-green-50 rounded-full text-green-600">
+                <MessageSquare size={20} />
+              </div>
+              <div>
+                <p className="text-sm font-bold">Chat with us</p>
+                <p className="text-[10px] text-gray-400">Response in 5 mins</p>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-gray-300" />
+          </a>
+
+          <a
+            href="tel:+919899990772"
+            className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between active:bg-gray-50">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-blue-50 rounded-full text-blue-600">
+                <Phone size={20} />
+              </div>
+              <div>
+                <p className="text-sm font-bold">Call Support</p>
+                <p className="text-[10px] text-gray-400">9 AM - 6 PM IST</p>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-gray-300" />
+          </a>
+        </div>
+
+        {/* 3. THE FORM CARD */}
+        <div className="bg-white mx-4 mt-2 rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-gray-100">
+            <h2 className="text-md font-bold text-gray-900">Send a Message</h2>
           </div>
 
-          {/* ALERT BANNER SYSTEM */}
           {status === "success" && (
-            <div className="mb-8 p-4 bg-green-50 border border-green-100 rounded-lg flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-              <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <h4 className="text-sm font-bold text-green-800">
-                  Message Sent Successfully
-                </h4>
-                <p className="text-xs text-green-700 mt-1">
-                  Thank you for contacting MNMUKT. Our team will get back to you
-                  within 24 hours.
-                </p>
-              </div>
-              <button
-                onClick={() => setStatus("idle")}
-                className="text-green-500 hover:text-green-700">
-                <X size={16} />
-              </button>
+            <div className="m-5 p-3 bg-green-50 border border-green-100 rounded text-green-700 text-xs font-bold flex items-center gap-2">
+              <CheckCircle2 size={16} /> Message sent successfully!
             </div>
           )}
 
-          {status === "error" && (
-            <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-lg flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <h4 className="text-sm font-bold text-red-800">
-                  Submission Failed
-                </h4>
-                <p className="text-xs text-red-700 mt-1">
-                  Something went wrong. Please check your connection and try
-                  again.
-                </p>
-              </div>
-              <button
-                onClick={() => setStatus("idle")}
-                className="text-red-500 hover:text-red-700">
-                <X size={16} />
-              </button>
+          <form onSubmit={handleSubmit} className="p-5 space-y-5">
+            <div>
+              <label className="text-[11px] font-bold text-gray-500 uppercase">
+                Full Name
+              </label>
+              <input
+                name="name"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full border-b border-gray-200 py-2 text-sm focus:border-[#B4292F] focus:outline-none"
+                placeholder="Required"
+              />
             </div>
-          )}
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Name & Email Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="group">
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-black transition-colors">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full bg-transparent border-b border-gray-300 py-3 text-gray-900 focus:border-black focus:outline-none transition-all placeholder-gray-300"
-                  placeholder="Full Name"
-                />
-              </div>
-
-              <div className="group">
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-black transition-colors">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase">
                   Email
                 </label>
                 <input
@@ -149,51 +123,27 @@ const ContactUsPage = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full bg-transparent border-b border-gray-300 py-3 text-gray-900 focus:border-black focus:outline-none transition-all placeholder-gray-300"
-                  placeholder="email@example.com"
+                  className="w-full border-b border-gray-200 py-2 text-sm focus:border-[#B4292F] focus:outline-none"
+                  placeholder="name@example.com"
                 />
               </div>
-            </div>
-
-            {/* Mobile & Order ID Row (NEW) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="group">
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-black transition-colors">
-                  Mobile Number
+              <div>
+                <label className="text-[11px] font-bold text-gray-500 uppercase">
+                  Order ID
                 </label>
                 <input
-                  type="tel"
-                  name="phone"
-                  required
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full bg-transparent border-b border-gray-300 py-3 text-gray-900 focus:border-black focus:outline-none transition-all placeholder-gray-300"
-                  placeholder="+91 98765 43210"
-                />
-              </div>
-
-              <div className="group">
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-black transition-colors">
-                  Order ID{" "}
-                  <span className="text-[10px] font-normal normal-case opacity-60">
-                    (Optional)
-                  </span>
-                </label>
-                <input
-                  type="text"
                   name="orderId"
                   value={formData.orderId}
                   onChange={handleChange}
-                  className="w-full bg-transparent border-b border-gray-300 py-3 text-gray-900 focus:border-black focus:outline-none transition-all placeholder-gray-300"
-                  placeholder="#MN-1234"
+                  className="w-full border-b border-gray-200 py-2 text-sm focus:border-[#B4292F] focus:outline-none"
+                  placeholder="#MN-1234 (Optional)"
                 />
               </div>
             </div>
 
-            {/* Message Area */}
-            <div className="group">
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-black transition-colors">
-                Inquiry Details
+            <div>
+              <label className="text-[11px] font-bold text-gray-500 uppercase">
+                Comment or Message
               </label>
               <textarea
                 name="message"
@@ -201,71 +151,35 @@ const ContactUsPage = () => {
                 rows="3"
                 value={formData.message}
                 onChange={handleChange}
-                className="w-full bg-transparent border-b border-gray-300 py-3 text-gray-900 focus:border-black focus:outline-none transition-all resize-none placeholder-gray-300"
-                placeholder="How can we help?"
+                className="w-full border border-gray-200 rounded-md p-3 mt-2 text-sm focus:border-[#B4292F] focus:outline-none resize-none"
+                placeholder="Explain your issue..."
               />
             </div>
 
-            <div className="pt-4">
-              <button
-                type="submit"
-                disabled={status === "loading" || status === "success"}
-                className="w-full md:w-auto px-12 py-4 bg-black text-white font-bold uppercase tracking-widest text-xs rounded-full hover:bg-gray-900 hover:shadow-lg hover:scale-[1.01] transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed">
-                {status === "loading" ? (
-                  <Loader2 className="animate-spin w-4 h-4" />
-                ) : (
-                  "Submit Inquiry"
-                )}
-                {!status && <ArrowRight className="w-4 h-4" />}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="w-full bg-[#FF9900] hover:bg-[#F28B00] text-gray-900 font-bold py-3 rounded-lg shadow-sm transition-all active:scale-95">
+              {status === "loading" ? (
+                <Loader2 className="animate-spin mx-auto w-5 h-5" />
+              ) : (
+                "Continue"
+              )}
+            </button>
           </form>
-
-          {/* Social Links */}
-          <div className="mt-12 flex gap-4 text-gray-400">
-            <Instagram className="w-5 h-5 hover:text-black transition cursor-pointer" />
-            <Facebook className="w-5 h-5 hover:text-black transition cursor-pointer" />
-          </div>
         </div>
 
-        {/* RIGHT: Image & Info Overlay */}
-        <div className="relative hidden lg:block h-full min-h-[800px] bg-gray-100">
-          <img
-            src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1974&auto=format&fit=crop"
-            alt="MNMUKT Bright Editorial"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-
-          {/* Info Card - White Frosted Glass */}
-          <div className="absolute bottom-12 left-12 right-12 bg-white/70 backdrop-blur-xl border border-white/40 p-8 rounded-2xl shadow-sm text-gray-900">
-            <h3 className="text-xl font-light tracking-wide mb-6">
-              MNMUKT Atelier
-            </h3>
-            <div className="space-y-5 text-sm text-gray-700">
-              <div className="flex items-start gap-4">
-                <MapPin className="w-5 h-5 text-black mt-0.5" />
-                <span>
-                  B 005, Sector 85, Noida,
-                  <br />
-                  Uttar Pradesh 201301
-                </span>
-              </div>
-              <div className="flex items-center gap-4">
-                <Mail className="w-5 h-5 text-black" />
-                <a
-                  href="mailto:care@mnmukt.in"
-                  className="hover:underline underline-offset-4 decoration-1">
-                  care@mnmukt.in
-                </a>
-              </div>
-              <div className="flex items-center gap-4">
-                <Phone className="w-5 h-5 text-black" />
-                <span>+91 98999 90772</span>
-              </div>
-            </div>
+        {/* 4. ADDRESS BAR (Amazon Type Minimalist) */}
+        <div className="p-6 text-gray-600">
+          <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-widest">
+            Store Address
+          </h3>
+          <div className="flex gap-4 items-start text-xs leading-relaxed">
+            <MapPin size={18} className="text-gray-400 shrink-0" />
+            <span>B 005, Sector 85, Noida, UP 201301</span>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
