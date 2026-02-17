@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../features/auth/context/UserContext"; // ✅ Auth Context
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../features/auth/context/UserContext";
 import { useCart } from "../features/cart/context/CartContext";
 import { useLocation, Navigate } from "react-router-dom";
 import {
@@ -16,41 +16,32 @@ import AddressForm from "../components/form/AddressForm";
 import AddressCard from "../components/cards/AddressCard";
 import CartSummary from "../features/cart/components/CartSummary";
 import PaymentConfirmationPopup from "../components/pop-up/PaymentConfirmationPopup";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, ArrowLeft } from "lucide-react";
 
 const AddressPage = () => {
-  // 🔥 Get User, Save Function, and Cached Address from Context
   const { user, isLoggedIn, saveAddress, address: cachedAddress } = useAuth();
   const { clear } = useCart();
   const location = useLocation();
-
-  // 1. RETRIEVE DATA FROM CART
   const { items, totalAmount } = location.state || {};
 
-  // Safety: Redirect if accessed directly without data
-  if (!items || items.length === 0) {
-    return <Navigate to="/cart" replace />;
-  }
+  if (!items || items.length === 0) return <Navigate to="/cart" replace />;
 
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [popupVisible, setPopupVisible] = useState(false);
 
-  // Form State
   const [form, setForm] = useState({
     name: "",
     phone: "",
-    addressLine1: "", // Form UI uses this
+    addressLine1: "",
     city: "",
     state: "",
     pincode: "",
-    id: null, // To track editing ID
+    id: null,
   });
 
-  const [popupVisible, setPopupVisible] = useState(false);
-
-  // Helper: Sanitize inputs (remove undefined)
   const sanitize = (obj) => {
     const sanitized = {};
     Object.entries(obj).forEach(([key, value]) => {
@@ -59,11 +50,8 @@ const AddressPage = () => {
     return sanitized;
   };
 
-  // 2. FETCH ALL ADDRESSES (Subcollection)
-  // We fetch the list because Context only holds the *Active* address
   useEffect(() => {
     if (!user?.uid) return;
-
     const loadAddresses = async () => {
       setLoading(true);
       try {
@@ -72,268 +60,219 @@ const AddressPage = () => {
           orderBy("createdAt", "desc"),
         );
         const snapshot = await getDocs(q);
-
         const loadedAddresses = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-
         setAddresses(loadedAddresses);
-
-        // 🔥 Smart Select:
-        // 1. If we have a cached address in Context, find it in the list
-        // 2. Else use defaultAddressId from profile
         const activeId = cachedAddress?.id || user.defaultAddressId;
-
         if (activeId) {
           const index = loadedAddresses.findIndex((a) => a.id === activeId);
           if (index !== -1) setSelectedAddressIndex(index);
         }
       } catch (err) {
-        console.error("Failed to load addresses:", err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-
     loadAddresses();
-  }, [user, cachedAddress]); // Re-run if context address changes
+  }, [user, cachedAddress]);
 
-  // 3. HANDLE SAVE (Using Context)
   const handleSaveAddress = async () => {
-    if (!user) return;
-
-    // Convert Form Data to DB Schema (line1 vs addressLine1)
     const addressPayload = {
-      id: form.id, // Pass ID if editing, null if new
-      line1: form.addressLine1, // Map UI field to DB field
+      id: form.id,
+      line1: form.addressLine1,
       city: form.city,
       state: form.state,
       pincode: form.pincode,
       name: form.name,
       phone: form.phone,
     };
-
     try {
-      // 🔥 Call Context Function (Handles DB, Link, & LocalStorage)
       const savedAddr = await saveAddress(addressPayload);
-
-      // Update Local List UI
       if (form.id) {
-        // Edit Mode: Update item in list
         setAddresses((prev) =>
           prev.map((a) => (a.id === savedAddr.id ? savedAddr : a)),
         );
       } else {
-        // Create Mode: Add to top and select
         setAddresses((prev) => [savedAddr, ...prev]);
         setSelectedAddressIndex(0);
       }
-
       setEditing(false);
-      setForm({
-        name: "",
-        phone: "",
-        addressLine1: "",
-        city: "",
-        state: "",
-        pincode: "",
-        id: null,
-      });
     } catch (error) {
-      alert("Failed to save address. Please try again.");
+      alert("Failed to save address.");
     }
   };
 
-  // 4. 🔥 PLACE ORDER (Full Snapshot Details)
+  // Generate 6-character order ID
+  const userIdentifier = (user.name || "user")
+    .replace(/\s+/g, "")
+    .toLowerCase()
+    .slice(0, 4); // first 4 letters of name
+
+  const randomDigits = Math.floor(Math.random() * 90 + 10); // 2-digit number (10–99)
+
+  const orderId = `${userIdentifier}${randomDigits}`;
+  console.log(orderId); // e.g., "mukt42"
+
   const placeOrder = async () => {
-    // A. Validation
-    if (addresses.length === 0) {
-      alert("Please add an address first.");
-      return;
-    }
-
-    if (!user) {
-      alert("You must be logged in to place an order.");
-      return;
-    }
-
+    if (addresses.length === 0) return alert("Add an address.");
     const selectedAddress = addresses[selectedAddressIndex];
 
     try {
-      // B. Construct the Order Object (Snapshot Strategy)
       const orderPayload = {
-        // 1. User Details Snapshot (Freezes user info at time of order)
+        orderId,
         userId: user.uid,
-        userSnapshot: {
-          name: user.name || "",
-          email: user.email || "",
-          phone: user.phone || "",
-        },
-
-        // 2. Location Snapshot (Full Address Object)
-        // We save the full address object so it persists even if user deletes address later
+        userSnapshot: { name: user.name || "", email: user.email || "" },
         deliveryAddress: sanitize({
           line1: selectedAddress.line1 || selectedAddress.addressLine1 || "",
           city: selectedAddress.city,
           state: selectedAddress.state,
           pincode: selectedAddress.pincode,
-          name: selectedAddress.name || user.name, // Contact Person
-          phone: selectedAddress.phone || user.phone, // Contact Phone
+          name: selectedAddress.name || user.name,
+          phone: selectedAddress.phone || user.phone,
         }),
-
-        // 3. Product Line Items (Snapshot)
         items: items.map((item) => ({
           productId: item.id,
           name: item.name,
-          // Handle image array vs string safely
           image: Array.isArray(item.images) ? item.images[0] : item.image || "",
           price: Number(item.price),
           quantity: Number(item.selectedQuantity || 1),
           selectedSize: item.selectedSize || "N/A",
-          // Calculate total for this specific line item
           lineTotal: Number(item.price) * Number(item.selectedQuantity || 1),
         })),
-
-        // 4. Financials
-        subtotal: Number(totalAmount),
-        shippingFee: 0,
         totalAmount: Number(totalAmount),
-
-        // 5. Order Metadata
-        status: "PLACED", // Enums: PLACED, PACKED, SHIPPED, DELIVERED, CANCELLED
+        status: "PLACED",
         paymentMethod: "COD",
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
       };
 
-      // C. Save to Firestore
-      const docRef = await addDoc(collection(db, "orders"), orderPayload);
-      console.log("Order placed successfully! ID:", docRef.id);
-
-      // D. Cleanup
-      await clear(); // Clear Cart Context & DB
-      setPopupVisible(true); // Show Success Modal
+      await addDoc(collection(db, "orders"), orderPayload);
+      await clear();
+      setPopupVisible(true);
     } catch (err) {
-      console.error("Failed to place order:", err);
-      alert("Failed to place order. Please try again.");
+      alert("Checkout failed.");
     }
   };
 
-  if (!isLoggedIn)
-    return <div className="p-10 text-center">Please log in to continue.</div>;
-
-  if (loading) {
+  if (loading)
     return (
-      <div className="h-screen flex items-center justify-center">
-        <Loader2 className="animate-spin text-gray-400" size={32} />
+      <div className="h-screen flex flex-col items-center justify-center bg-white">
+        <Loader2 className="animate-spin text-[#ff356c] mb-4" size={32} />
+        <span className="text-[10px] uppercase tracking-[0.4em] text-slate-400">
+          Verifying Protocol
+        </span>
       </div>
     );
-  }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-8 font-[Poppins]">
-      {/* LEFT: Address Management */}
-      <div className="flex-1 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h3 className="text-xl font-semibold mb-6">Delivery Address</h3>
-
-        {editing ? (
-          <AddressForm
-            form={form}
-            setForm={setForm}
-            onSave={handleSaveAddress} // Use our wrapper
-            onCancel={() => {
-              setEditing(false);
-              setForm({
-                name: "",
-                phone: "",
-                addressLine1: "",
-                city: "",
-                state: "",
-                pincode: "",
-                id: null,
-              });
-            }}
-          />
-        ) : (
-          <div className="space-y-4">
-            {addresses.map((addr, idx) => (
-              <div
-                key={addr.id}
-                onClick={() => {
-                  setSelectedAddressIndex(idx);
-                  // Optional: Update global context when user clicks a card
-                  saveAddress({ ...addr, id: addr.id });
-                }}
-                className={`border p-4 rounded-lg relative cursor-pointer transition-all ${
-                  selectedAddressIndex === idx
-                    ? "border-black bg-gray-50 ring-1 ring-black"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}>
-                <div className="flex items-start gap-3">
-                  <div
-                    className={`mt-1 w-4 h-4 rounded-full border flex items-center justify-center ${
-                      selectedAddressIndex === idx
-                        ? "border-black"
-                        : "border-gray-400"
-                    }`}>
-                    {selectedAddressIndex === idx && (
-                      <div className="w-2 h-2 rounded-full bg-black" />
-                    )}
-                  </div>
-
-                  <div className="flex-1">
-                    <AddressCard
-                      address={{
-                        ...addr,
-                        // Map DB fields back to UI expected fields if AddressCard expects addressLine1
-                        addressLine1: addr.line1 || addr.addressLine1,
-                      }}
-                      onEdit={(e) => {
-                        e.stopPropagation();
-                        setEditing(true);
-                        setForm({
-                          ...addr,
-                          addressLine1: addr.line1 || addr.addressLine1, // Map back
-                          id: addr.id,
-                        });
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            <button
-              onClick={() => {
-                setForm({
-                  name: user.name || "",
-                  phone: user.phone || "",
-                  addressLine1: "",
-                  city: "",
-                  state: "",
-                  pincode: "",
-                  id: null,
-                });
-                setEditing(true);
-              }}
-              className="w-full mt-4 bg-white hover:bg-gray-50 text-gray-800 font-medium py-4 rounded-xl transition border-2 border-dashed border-gray-300 flex items-center justify-center gap-2">
-              <span>+</span> Add New Address
-            </button>
-          </div>
-        )}
+    <div className="min-h-screen bg-white font-sans text-slate-900 pb-20">
+      {/* Header */}
+      <div className="max-w-7xl mx-auto px-6 py-12 border-b border-slate-50">
+        <h1 className="text-4xl md:text-6xl font-light tracking-tighter">
+          Shipping{" "}
+          <span className="italic font-serif text-[#ff356c]">Manifest.</span>
+        </h1>
       </div>
 
-      {/* RIGHT: Order Summary */}
-      <div className="md:w-96 h-fit sticky top-24">
-        <CartSummary
-          subtotal={totalAmount}
-          originalTotalPrice={totalAmount}
-          platformFee={0}
-          selectedItems={items}
-          onPlaceOrder={placeOrder}
-          btnText="Place Order"
-        />
+      <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col lg:flex-row gap-20">
+        {/* LEFT: Management */}
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-10">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300">
+              Delivery Directory
+            </h3>
+            {!editing && (
+              <button
+                onClick={() => setEditing(true)}
+                className="text-[10px] font-black text-[#ff356c] uppercase tracking-widest flex items-center gap-2">
+                <Plus size={14} /> Add New
+              </button>
+            )}
+          </div>
+
+          {editing ? (
+            <div className="bg-slate-50/50 p-8 rounded-sm animate-in fade-in slide-in-from-bottom-4">
+              <AddressForm
+                form={form}
+                setForm={setForm}
+                onSave={handleSaveAddress}
+                onCancel={() => setEditing(false)}
+              />
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {addresses.map((addr, idx) => (
+                <div
+                  key={addr.id}
+                  onClick={() => setSelectedAddressIndex(idx)}
+                  className={`group relative border-b py-8 transition-all cursor-pointer ${
+                    selectedAddressIndex === idx
+                      ? "border-[#ff356c]"
+                      : "border-slate-100"
+                  }`}>
+                  <div className="flex items-start gap-8">
+                    {/* Minimalist Radio */}
+                    <div
+                      className={`mt-1.5 w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                        selectedAddressIndex === idx
+                          ? "border-[#ff356c]"
+                          : "border-slate-200"
+                      }`}>
+                      {selectedAddressIndex === idx && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#ff356c]" />
+                      )}
+                    </div>
+
+                    <div className="flex-1">
+                      <AddressCard
+                        address={{
+                          ...addr,
+                          addressLine1: addr.line1 || addr.addressLine1,
+                        }}
+                        onEdit={(e) => {
+                          e.stopPropagation();
+                          setEditing(true);
+                          setForm({
+                            ...addr,
+                            addressLine1: addr.line1 || addr.addressLine1,
+                            id: addr.id,
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT: Order Summary */}
+        <div className="lg:w-[400px]">
+          <div className="sticky top-32">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 mb-10">
+              Checkout Summary
+            </h3>
+            <div className="bg-slate-50/50 p-8 rounded-sm">
+              <CartSummary
+                subtotal={totalAmount}
+                originalTotalPrice={totalAmount}
+                platformFee={0}
+                selectedItems={items}
+                onPlaceOrder={placeOrder}
+                btnText="Authorize Purchase"
+              />
+            </div>
+
+            {/* Guarantee */}
+            <p className="mt-8 text-[9px] uppercase tracking-[0.2em] text-slate-400 leading-loose text-center">
+              Secure Checkout // Encryption Active <br />
+              Orders are processed within 24 business hours.
+            </p>
+          </div>
+        </div>
       </div>
 
       <PaymentConfirmationPopup
@@ -341,6 +280,7 @@ const AddressPage = () => {
         onClose={() => setPopupVisible(false)}
         whatsappNumber="919999999999"
         userId={user.uid}
+        orderId={orderId}
       />
     </div>
   );

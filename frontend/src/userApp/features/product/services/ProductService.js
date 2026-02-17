@@ -7,8 +7,9 @@ import {
   doc,
   getDocs,
   getDoc,
-  query,
+ 
   where,
+query, orderBy
 } from "firebase/firestore";
 import { db } from "../../../../config/firebase";
 
@@ -249,4 +250,33 @@ export const productService = {
       throw new Error(`Failed to fetch out of stock products: ${error.message}`);
     }
   },
+};
+
+
+export const fetchAllProducts = async () => {
+  try {
+    const productsRef = collection(db, "products");
+    console.log(productsRef)
+
+    // Optional: order products by createdAt
+    const q = query(productsRef, orderBy("createdAt", "desc"));
+
+    const snapshot = await getDocs(q);
+
+    const products = snapshot.docs.map((doc) => {
+      const data = doc.data();
+
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate?.() || null,
+        updatedAt: data.updatedAt?.toDate?.() || null,
+      };
+    });
+
+    return products;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    throw error;
+  }
 };

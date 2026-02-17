@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy } from "react";
 import { useAuth } from "../features/auth/context/UserContext";
+import ForgotPasswordPage from "../features/auth/pages/ForgotPasswordPage";
 
 /* Lazy load auth pages */
 const LoginPage = lazy(() => import("../features/auth/pages/LoginPage"));
@@ -33,6 +34,9 @@ export default function AuthRoutes() {
           </PublicOnlyRoute>
         }
       />
+      <Route path="forgot-password" element={<ForgotPasswordPage />} />
+
+      {/* <Route path="email-verification" element={<EmailVerification />} /> */}
 
       {/* Default redirect to login if route not found */}
       <Route path="*" element={<Navigate to="login" replace />} />

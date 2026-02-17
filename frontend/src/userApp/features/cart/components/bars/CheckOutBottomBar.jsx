@@ -6,7 +6,7 @@ const CheckOutBottomBar = ({ selectedItems, totalPrice, onPlaceOrder }) => {
   if (selectedCount === 0) return null; // hide if nothing selected
 
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-white shadow-t px-4 py-3 flex justify-between items-center md:hidden">
+    <div className="fixed bottom-0 z-60 mt-6 left-0 w-full bg-white shadow-t px-4 py-3 flex justify-between items-center md:hidden">
       {/* Selected items info */}
       <div className="flex flex-col">
         <span className="text-sm font-medium">

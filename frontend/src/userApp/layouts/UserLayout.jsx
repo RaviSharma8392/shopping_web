@@ -4,6 +4,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import UserNavbar from "../features/account/components/bars/UserNavbar";
 import WhatsAppPopup from "../components/pop-up/WhatsAppPopup";
 import BottomNavbar from "../features/account/components/bars/BottomHomeNavbar";
+import Footer from "../components/footer/Footer";
 
 const UserLayout = () => {
   const location = useLocation();
@@ -45,6 +46,7 @@ const UserLayout = () => {
       {/* 3. FLOATING ELEMENTS */}
       <WhatsAppPopup />
       <BottomNavbar />
+      <Footer />
     </div>
   );
 };

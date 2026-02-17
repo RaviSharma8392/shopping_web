@@ -1,6 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../../../../config/firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  signOut,
+} from "firebase/auth";
 import {
   doc,
   getDoc,
@@ -241,6 +245,23 @@ export const AuthProvider = ({ children }) => {
     clearAuth();
   };
 
+  const resetPassword = async (email) => {
+    if (!email) throw new Error("Email is required");
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      return "Password reset email sent successfully.";
+    } catch (err) {
+      if (err.code === "auth/user-not-found") {
+        throw new Error("No account found with this email.");
+      }
+      if (err.code === "auth/invalid-email") {
+        throw new Error("Invalid email address.");
+      }
+      throw new Error("Failed to send reset email.");
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -252,6 +273,7 @@ export const AuthProvider = ({ children }) => {
         saveAddress, // 🔥 Use this for Address Forms
         updateUserAndSync, // 🔥 Use this for Profile Forms
         updateAddressCache, // Use for manual UI updates
+        resetPassword,
       }}>
       {children}
     </AuthContext.Provider>

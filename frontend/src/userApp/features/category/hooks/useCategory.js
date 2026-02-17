@@ -5,7 +5,6 @@ export const useCategories = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     setError(null);

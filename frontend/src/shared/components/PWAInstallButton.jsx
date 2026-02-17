@@ -45,7 +45,7 @@ const PWAInstallButton = () => {
             mnmukt Desktop
           </h2>
           <p className="text-white/60 text-xs mt-1 uppercase tracking-[0.2em]">
-            Official Admin App
+            Official App
           </p>
         </div>
 

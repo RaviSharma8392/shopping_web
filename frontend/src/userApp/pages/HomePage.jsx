@@ -1,38 +1,12 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { IMAGES } from "../../assets/images";
 import { useProducts } from "../features/product/hook/useProducts";
 import { useFirebaseCollection } from "../features/collection/hook/useItemCollection";
 import { useCategories } from "../features/category/hooks/useCategory";
-import { db } from "../../config/firebase";
-import { collection, getDocs } from "firebase/firestore";
-
-export const fetchAllProducts = async () => {
-  try {
-    const itemsCollection = collection(db, "itemsCollection"); // Your Firestore collection
-    const snapshot = await getDocs(itemsCollection);
-
-    const products = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    console.log("All products:", products); // Print products
-    return products;
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    return [];
-  }
-};
 
 // -----------------------------
-// 3. Usage example
+// Lazy-loaded components
 // -----------------------------
-(async () => {
-  const allProducts = await fetchAllProducts();
-  // console.log("Total products fetched:", allProducts.length);
-})();
-// Lazy-loaded components (for better performance)
 const HeroBanner = React.lazy(() => import("../components/banner/HeroBanner"));
 const VideoSection = React.lazy(
   () => import("../components/section/VideoSection"),
@@ -54,22 +28,80 @@ const TestimonialsSection = React.lazy(
 );
 
 // -----------------------------
-// Loading fallback (spinner while lazy components load)
+// Skeleton Components
 // -----------------------------
-const LoadingFallback = () => (
-  <div className="flex flex-col items-center justify-center h-[50vh] text-center">
-    <img
-      src={IMAGES.appLogo}
-      alt="Loading"
-      className="w-20 h-20 mb-4 animate-spin-slow"
-    />
-    <p className="text-gray-600 text-sm">Loading…</p>
+
+const HeroSkeleton = () => (
+  <div className="w-full h-[60vh] bg-gray-100 animate-pulse flex items-center justify-center">
+    <div className="w-2/3 space-y-4 text-center">
+      <div className="h-10 bg-gray-200 rounded w-1/2 mx-auto" />
+      <div className="h-4 bg-gray-200 rounded w-1/3 mx-auto" />
+      <div className="h-10 bg-gray-300 rounded w-40 mx-auto mt-6" />
+    </div>
+  </div>
+);
+
+const GridSectionSkeleton = () => (
+  <div className="w-full py-16 px-4 md:px-10 animate-pulse">
+    <div className="h-8 w-48 bg-gray-200 rounded mb-10" />
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="space-y-3">
+          <div className="h-60 bg-gray-200 rounded-lg" />
+          <div className="h-4 bg-gray-200 rounded w-3/4" />
+          <div className="h-4 bg-gray-100 rounded w-1/2" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const CategoriesSkeleton = () => (
+  <div className="w-full py-16 px-4 md:px-10 animate-pulse">
+    <div className="h-8 w-40 bg-gray-200 rounded mb-10" />
+    <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="text-center space-y-3">
+          <div className="h-24 w-24 bg-gray-200 rounded-full mx-auto" />
+          <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const CollectionGridSkeleton = () => (
+  <div className="w-full py-16 px-4 md:px-10 animate-pulse">
+    <div className="h-8 w-64 bg-gray-200 rounded mb-10" />
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="h-72 bg-gray-200 rounded-lg" />
+      ))}
+    </div>
+  </div>
+);
+
+const TestimonialsSkeleton = () => (
+  <div className="w-full py-20 px-4 md:px-10 animate-pulse">
+    <div className="text-center mb-16">
+      <div className="h-10 w-60 bg-gray-200 mx-auto rounded mb-4" />
+      <div className="h-4 w-40 bg-gray-100 mx-auto rounded" />
+    </div>
+
+    <div className="grid gap-14 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="space-y-4">
+          <div className="w-16 h-16 bg-gray-200 rounded-full" />
+          <div className="h-4 bg-gray-200 rounded" />
+          <div className="h-4 bg-gray-100 rounded w-3/4" />
+        </div>
+      ))}
+    </div>
   </div>
 );
 
 // -----------------------------
-// Helper: Normalize collection types
-// Makes sure we always have an array, no matter how data is stored
+// Helper
 // -----------------------------
 const normalizeCollectionTypes = (product) => {
   if (Array.isArray(product.collectionTypes)) return product.collectionTypes;
@@ -84,40 +116,14 @@ const normalizeCollectionTypes = (product) => {
 const HomePage = () => {
   const collectionName = "itemsCollection";
 
-  // -----------------------------
-  // CUSTOM HOOKS
-  // -----------------------------
-  const { getProducts, loading: productsLoading } = useProducts(); // Get all products
-  const { items: collectionItems } = useFirebaseCollection(collectionName); // Get collection items
-  const { categories, loading: categoriesLoading } = useCategories(); // Get all categories
+  const { getProducts, loading: productsLoading } = useProducts();
+  const { items: collectionItems } = useFirebaseCollection(collectionName);
+  const { categories, loading: categoriesLoading } = useCategories();
 
-  // -----------------------------
-  // STATE
-  // -----------------------------
-  const [homeProducts, setHomeProducts] = useState({}); // Products grouped by section
-  const [collection, setCollection] = useState([]); // All collection items
-  const [allCategories, setAllCategories] = useState([]); // All categories
+  const [homeProducts, setHomeProducts] = useState({});
+  const [collection, setCollection] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
 
-  // -----------------------------
-  // TEMP: Print all products to console (for debugging)
-  // -----------------------------
-  // useEffect(() => {
-  //   const fetchAllProducts = async () => {
-  //     try {
-  //       const products = await getProducts();
-  //       // console.log("ALL PRODUCTS:", products); // 🔹 Check all products
-  //     } catch (err) {
-  //       console.error("Failed to fetch products:", err);
-  //     }
-  //   };
-  //   fetchAllProducts();
-  // }, [getProducts]);
-
-  // -----------------------------
-  // CONFIG: PRODUCT SECTIONS
-  // You can manually add titles/subtitles for each collection type
-  // key = matches product.collectionType
-  // -----------------------------
   const productSections = [
     {
       key: "new-arrivals",
@@ -125,11 +131,6 @@ const HomePage = () => {
       subtitle: "Fresh styles added this week",
     },
     { key: "basics", title: "Basics", subtitle: "Handpicked just for you" },
-    // {
-    //   key: "Suits & Anarkalis",
-    //   title: "Festive Collection",
-    //   subtitle: "Special designs for occasions",
-    // },
     {
       key: "Trends",
       title: "Trends Collection",
@@ -137,15 +138,10 @@ const HomePage = () => {
     },
   ];
 
-  // -----------------------------
-  // FETCH HOME PRODUCTS & GROUP BY SECTION
-  // -----------------------------
   useEffect(() => {
     const fetchHomeProducts = async () => {
       try {
         const products = await getProducts();
-
-        // Group products by collection key (section)
         const grouped = {};
         productSections.forEach((section) => {
           grouped[section.key] = products.filter(
@@ -154,30 +150,22 @@ const HomePage = () => {
               normalizeCollectionTypes(product).includes(section.key),
           );
         });
-
         setHomeProducts(grouped);
       } catch (error) {
         console.error("Failed to fetch home products:", error);
       }
     };
-
     fetchHomeProducts();
   }, [getProducts]);
 
-  // -----------------------------
-  // SET COLLECTION & CATEGORIES
-  // -----------------------------
   useEffect(() => {
-    setCollection(collectionItems || []); // set all collection items
+    setCollection(collectionItems || []);
   }, [collectionItems]);
 
   useEffect(() => {
-    setAllCategories(categories || []); // set all categories
+    setAllCategories(categories || []);
   }, [categories]);
 
-  // -----------------------------
-  // RENDER
-  // -----------------------------
   return (
     <div className="min-h-screen bg-white font-sans">
       <Helmet>
@@ -188,46 +176,51 @@ const HomePage = () => {
         />
       </Helmet>
 
-      <Suspense fallback={<LoadingFallback />}>
-        {/* Hero Section */}
+      <Suspense fallback={<HeroSkeleton />}>
         <HeroBanner />
+      </Suspense>
 
-        {/* Video Section */}
+      <Suspense fallback={<HeroSkeleton />}>
         <VideoSection />
+      </Suspense>
 
-        {/* Categories Section */}
-        {allCategories.length > 0 && (
-          <CategoriesSection
-            categories={allCategories}
-            loading={categoriesLoading}
-          />
-        )}
+      <Suspense fallback={<CategoriesSkeleton />}>
+        <CategoriesSection
+          categories={allCategories}
+          loading={categoriesLoading}
+        />
+      </Suspense>
 
-        {/* Featured Collection Sections */}
-        {productSections.map((section) => (
+      {productSections.map((section) => (
+        <Suspense
+          key={`featured-${section.key}`}
+          fallback={<GridSectionSkeleton />}>
           <FeaturedCollectionSection
-            key={section.key}
             title={section.title}
             products={homeProducts[section.key] || []}
             loading={productsLoading}
           />
-        ))}
+        </Suspense>
+      ))}
 
-        {/* Product Sections */}
-        {productSections.map((section) => (
+      {productSections.map((section) => (
+        <Suspense
+          key={`product-${section.key}`}
+          fallback={<GridSectionSkeleton />}>
           <ProductSection
-            key={section.key}
             title={section.title}
             subtitle={section.subtitle}
             products={homeProducts[section.key] || []}
             loading={productsLoading}
           />
-        ))}
+        </Suspense>
+      ))}
 
-        {/* Collections Grid */}
+      <Suspense fallback={<CollectionGridSkeleton />}>
         <CollectionGrid title="SHOP BY COLLECTIONS" items={collection} />
+      </Suspense>
 
-        {/* Testimonials Section */}
+      <Suspense fallback={<TestimonialsSkeleton />}>
         <TestimonialsSection />
       </Suspense>
     </div>

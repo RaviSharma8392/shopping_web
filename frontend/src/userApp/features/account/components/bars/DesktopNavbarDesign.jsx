@@ -125,7 +125,7 @@ const DesktopNavbar = ({
               {/* Animated Underline */}
               <span
                 className={`
-                absolute bottom-0 left-0 w-full h-[2px] bg-red-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left
+                absolute bottom-0 left-0 w-full h-0.5 bg-red-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left
               `}
               />
             </NavLink>

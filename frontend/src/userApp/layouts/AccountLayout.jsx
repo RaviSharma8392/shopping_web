@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 
 const AccountLayout = () => {
   return (
-    <div className="min-h-screen bg-[#f1f3f6] font-sans">
+    <div className="min-h-screen  font-sans">
       {/* AMAZON/FLIPKART PLAN:
          - Removed Sidebar for a single-column focus.
          - Background #f1f3f6 makes the white content sections look premium.
@@ -12,7 +12,7 @@ const AccountLayout = () => {
 
       <main className="max-w-4xl mx-auto min-h-screen flex flex-col">
         {/* Main Content Area */}
-        <section className="flex-1 bg-white shadow-sm md:shadow-md md:mt-4 md:mb-8 md:rounded-lg overflow-hidden border-x border-b border-gray-100 md:border-t">
+        <section className="flex-1 bg-white ">
           <Outlet />
         </section>
 

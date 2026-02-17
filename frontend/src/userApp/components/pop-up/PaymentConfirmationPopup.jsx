@@ -1,60 +1,163 @@
-import React from "react";
-import { CheckCircle2, Smartphone, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import {
+  Check,
+  Smartphone,
+  X,
+  ShieldCheck,
+  Copy,
+  ExternalLink,
+  Clock,
+  Package,
+} from "lucide-react";
 
-const PaymentConfirmationPopup = ({ visible, onClose, whatsappNumber }) => {
+const PaymentConfirmationPopup = ({
+  visible,
+  orderId,
+  onClose,
+  whatsappNumber,
+}) => {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => (document.body.style.overflow = "unset");
+  }, [visible]);
+
   if (!visible) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-6 relative">
-        {/* TOP-RIGHT CLOSE BUTTON */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-800">
-          <X size={20} />
-        </button>
+  const handleCopy = () => {
+    navigator.clipboard.writeText(whatsappNumber);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-        {/* HEADER */}
-        <div className="flex flex-col items-center text-center gap-3">
-          <CheckCircle2 size={40} className="text-emerald-500" />
-          <h2 className="text-lg font-bold text-gray-900">
-            Your order is placed!
-          </h2>
-          <p className="text-sm text-gray-600">
-            We are messaging you on WhatsApp to confirm your payment. Currently,
-            we only accept payments via WhatsApp.
-          </p>
+  // const orderId = `MN-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  return (
+    <div className="fixed inset-0 z-[200] bg-slate-50 flex items-center justify-center font-sans p-4 md:p-6 animate-in fade-in duration-300">
+      {/* Main Card Container */}
+      <div className="bg-white w-full max-w-[500px] shadow-2xl shadow-slate-200 flex flex-col relative overflow-hidden rounded-sm border border-slate-100">
+        {/* 1. TOP PROGRESS BAR (Amazon Style) */}
+        <div className="h-1 bg-slate-100 w-full">
+          <div className="h-full bg-[#ff356c] w-full animate-progress-fast" />
         </div>
 
-        {/* WHATSAPP INFO */}
-        <div
-          className="mt-6 group flex items-center justify-between bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-lg px-4 py-3 cursor-pointer transition-all"
-          onClick={() => navigator.clipboard.writeText(whatsappNumber)}>
-          <div className="flex items-center gap-3">
-            <Smartphone
-              size={20}
-              className="text-gray-400 group-hover:text-emerald-600"
-            />
-            <span className="text-lg font-mono font-bold text-gray-800 group-hover:text-emerald-800">
-              +91 {whatsappNumber}
+        {/* 2. HEADER */}
+        <div className="px-6 py-5 border-b border-slate-50 flex justify-between items-center bg-white">
+          <div className="flex items-center gap-2">
+            <div className="bg-emerald-500 rounded-full p-1">
+              <Check size={12} className="text-white" strokeWidth={4} />
+            </div>
+            <span className="text-[11px] font-bold text-slate-800 uppercase tracking-tight">
+              Order Placed Successfully
             </span>
           </div>
-          <div className="text-xs font-medium text-gray-500 group-hover:text-emerald-600">
-            Click to copy
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-900 transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* 3. CONTENT AREA */}
+        <div className="p-6 space-y-6 overflow-y-auto max-h-[80vh]">
+          {/* Order Summary Box */}
+          <div className="flex items-center justify-between bg-slate-50 p-4 rounded-sm border border-slate-100">
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Order ID
+              </p>
+              <p className="text-sm font-black text-slate-900">{orderId}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Verification
+              </p>
+              <p className="text-xs font-bold text-[#ff356c] flex items-center gap-1 justify-end">
+                <Clock size={12} /> Awaiting Payment
+              </p>
+            </div>
+          </div>
+
+          {/* Amazon-Type Information block */}
+          <div className="space-y-3">
+            <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+              Final Step: Verify Acquisition
+            </h2>
+            <p className="text-[13px] text-slate-600 leading-relaxed">
+              We process payments exclusively through our{" "}
+              <span className="font-bold text-slate-900">
+                WhatsApp Concierge
+              </span>{" "}
+              to ensure personalized support and secure transactions.
+            </p>
+          </div>
+
+          {/* The "Action Card" (Myntra Style Colors) */}
+          <div className="border border-slate-200 rounded-sm overflow-hidden">
+            <div className="p-4 bg-slate-50/50 flex items-center gap-3 border-b border-slate-100">
+              <Smartphone size={18} className="text-slate-400" />
+              <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                Payment Gateway
+              </span>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div
+                onClick={handleCopy}
+                className="flex items-center justify-between cursor-pointer group">
+                <div>
+                  <p className="text-2xl font-black text-slate-900 tracking-tighter">
+                    +91 {whatsappNumber}
+                  </p>
+                  <p className="text-[10px] text-[#ff356c] font-bold uppercase mt-1">
+                    {copied ? "✓ Copied to clipboard" : "Click to copy number"}
+                  </p>
+                </div>
+                <div className="bg-slate-100 p-2 group-hover:bg-slate-200 transition-colors">
+                  <Copy size={16} className="text-slate-500" />
+                </div>
+              </div>
+
+              <a
+                href={`https://wa.me/${whatsappNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-slate-900 text-white flex items-center justify-center gap-2 py-4 text-[12px] font-bold uppercase tracking-widest hover:bg-black transition-all active:scale-[0.98]">
+                Go to WhatsApp <ExternalLink size={14} />
+              </a>
+            </div>
+          </div>
+
+          {/* Secure Badge */}
+          <div className="flex items-center justify-center gap-2 py-2">
+            <ShieldCheck size={14} className="text-emerald-600" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              100% Secure Transaction Protocol
+            </span>
           </div>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-4">
-          Please ensure the payment comes from this official number to avoid
-          fraud.
-        </p>
-
-        {/* BOTTOM CLOSE BUTTON */}
-        <button
-          onClick={onClose}
-          className="mt-6 w-full bg-gray-900 hover:bg-black text-white font-bold py-3 rounded-xl transition-transform active:scale-[0.98]">
-          Close
-        </button>
+        {/* 4. FOOTER (Myntra Style Thin) */}
+        <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-slate-900 uppercase tracking-[0.3em]">
+              Mnmukt
+            </span>
+            <span className="text-[9px] text-slate-400 italic">
+              Purity in Essence
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-[11px] font-bold text-slate-500 hover:text-slate-900 border-b border-slate-300 pb-0.5">
+            Manage Orders
+          </button>
+        </div>
       </div>
     </div>
   );

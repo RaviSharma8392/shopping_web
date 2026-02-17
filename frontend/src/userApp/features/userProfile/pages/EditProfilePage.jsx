@@ -3,19 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/context/UserContext";
 import { editUserProfile } from "../services/userService";
 import {
-  User,
-  Calendar,
   ArrowLeft,
-  Save,
   Loader2,
   Camera,
-  Mail,
-  Smartphone,
-  MapPin,
-  Home,
-  Briefcase,
+  ShieldCheck,
   ChevronRight,
+  Globe,
+  User as UserIcon,
 } from "lucide-react";
+import NotificationProduct from "../../../components/cards/NotificationProduct";
 
 const EditProfilePage = () => {
   const { user, address, updateUserAndSync, saveAddress } = useAuth();
@@ -30,22 +26,22 @@ const EditProfilePage = () => {
     state: "",
     pincode: "",
   });
-
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
-  // 1. SYNC DATA ON LOAD
   useEffect(() => {
-    if (user) {
+    if (user)
       setForm((prev) => ({
         ...prev,
         name: user.name || "",
         gender: user.gender || "",
         dateOfBirth: user.dateOfBirth || "",
       }));
-    }
-    if (address) {
+    if (address)
       setForm((prev) => ({
         ...prev,
         addressLine1: address.line1 || "",
@@ -53,347 +49,241 @@ const EditProfilePage = () => {
         state: address.state || "",
         pincode: address.pincode || "",
       }));
-    }
   }, [user, address]);
 
-  const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    if (error) setError("");
-  };
-
-  // 2. HANDLE SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccess(false);
-
     try {
-      if (!form.name.trim()) throw new Error("Full Name is required");
-
+      if (!form.name.trim()) throw new Error("Full identity required");
       let finalAddressId = user.defaultAddressId;
-
-      // Step A: Save Address (if changed/added)
       if (form.addressLine1 || form.city) {
-        const addressPayload = {
+        const savedAddr = await saveAddress({
           line1: form.addressLine1,
           city: form.city,
           state: form.state,
           pincode: form.pincode,
           id: address?.id || null,
-        };
-        const savedAddr = await saveAddress(addressPayload);
+        });
         finalAddressId = savedAddr.id;
       }
-
-      // Step B: Save Profile
-      const profileUpdates = {
+      const updates = {
         name: form.name.trim(),
         gender: form.gender || null,
         dateOfBirth: form.dateOfBirth || null,
         defaultAddressId: finalAddressId,
       };
-
-      await editUserProfile(user.uid, profileUpdates);
-      await updateUserAndSync(profileUpdates);
-
-      setSuccess(true);
-      // Small delay before redirect so user sees success state
-      setTimeout(() => navigate("/user/profile"), 800);
+      await editUserProfile(user.uid, updates);
+      await updateUserAndSync(updates);
+      setToast({
+        show: true,
+        message: "Manifest Updated Successfully",
+        type: "success",
+      });
+      setTimeout(() => navigate("/user/profile"), 1500);
     } catch (err) {
-      console.error(err);
-      setError(err.message || "Failed to update profile");
+      setToast({
+        show: true,
+        message: err.message || "Protocol Failure",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  if (!user) return null;
-
   return (
-    <div className="min-h-screen bg-gray-50/50 font-sans pb-20">
-      {/* --- HEADER BACKGROUND --- */}
-      <div className="h-48 bg-gradient-to-r from-gray-900 to-gray-800 relative">
+    <div className="min-h-screen bg-[#FBFBFA] font-sans">
+      {toast.show && (
+        <NotificationProduct
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
+      )}
+
+      {/* 1. LUXURY MINIMAL NAV */}
+      <nav className="bg-white border-b border-gray-100 px-8 h-20 flex items-center justify-between sticky top-0 z-50">
         <button
           onClick={() => navigate("/user/profile")}
-          className="absolute top-6 left-6 flex items-center gap-2 text-white/80 hover:text-white transition-colors bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium border border-white/10">
-          <ArrowLeft size={16} /> Back to Profile
+          className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-gray-400 hover:text-black transition-all">
+          <ArrowLeft size={16} strokeWidth={1} />
+          Return to Profile
         </button>
-      </div>
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={16} className="text-[#ff356c]" />
+          <span className="text-[9px] font-black uppercase tracking-widest text-gray-300">
+            Auth Session Active
+          </span>
+        </div>
+      </nav>
 
-      <div className="max-w-5xl mx-auto px-4 -mt-20 relative z-10">
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col md:flex-row gap-8">
-          {/* --- LEFT COLUMN: PROFILE CARD --- */}
-          <div className="w-full md:w-1/3 flex flex-col gap-6">
-            {/* Identity Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden text-center p-6">
-              <div className="relative inline-block mx-auto mb-4">
-                <div className="w-28 h-28 rounded-full bg-gray-100 border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
-                  {user.photoURL ? (
-                    <img
-                      src={user.photoURL}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User size={48} className="text-gray-300" />
-                  )}
-                </div>
-                <button
-                  type="button"
-                  className="absolute bottom-1 right-1 bg-red-600 text-white p-2 rounded-full shadow-lg border-2 border-white hover:bg-red-700 transition-colors">
-                  <Camera size={14} />
-                </button>
-              </div>
-
-              <h2 className="text-xl font-bold text-gray-900">
-                {form.name || "User Name"}
-              </h2>
-              <p className="text-sm text-gray-500 mb-6">{user.email}</p>
-
-              <div className="bg-blue-50 rounded-xl p-4 text-left border border-blue-100">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
-                    <Briefcase size={18} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-blue-800 uppercase">
-                      Profile Status
-                    </p>
-                    <p className="text-xs text-blue-600 mt-0.5">
-                      Your profile is 80% complete.
-                    </p>
-                  </div>
-                </div>
-              </div>
+      <main className="max-w-5xl mx-auto px-6 py-12">
+        <div className="flex flex-col lg:flex-row gap-16">
+          {/* LEFT: Identity Sidebar */}
+          <aside className="lg:w-1/3 space-y-8">
+            <div className="space-y-4">
+              <h1 className="text-4xl font-light tracking-tighter text-gray-900 leading-none">
+                Edit <br />{" "}
+                <span className="italic font-serif text-[#ff356c]">
+                  Personal.
+                </span>
+              </h1>
             </div>
 
-            {/* Contact Info (Read Only) */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">
-                Contact Info
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
-                    <Mail size={16} />
-                  </div>
-                  <div className="flex-1 overflow-hidden">
-                    <p className="text-xs text-gray-400">Email Address</p>
-                    <p className="font-medium text-gray-900 truncate">
-                      {user.email}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
-                    <Smartphone size={16} />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400">Phone Number</p>
-                    <p className="font-medium text-gray-900">
-                      {user.phone || "Not set"}
-                    </p>
-                  </div>
-                </div>
+            <div className="relative inline-block group">
+              <div className="w-32 h-32 rounded-full border border-gray-100 p-2 bg-white shadow-sm transition-transform duration-500 group-hover:scale-[1.02]">
+                <img
+                  src={
+                    user?.photoURL ||
+                    `https://ui-avatars.com/api/?name=${user?.name}&background=f3f4f6&color=9ca3af`
+                  }
+                  alt="Identity"
+                  className="w-full h-full rounded-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all"
+                />
               </div>
-            </div>
-          </div>
-
-          {/* --- RIGHT COLUMN: EDIT FORMS --- */}
-          <div className="w-full md:w-2/3 flex flex-col gap-6">
-            {/* Error / Success Messages */}
-            {error && (
-              <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl text-sm flex items-center gap-2">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />{" "}
-                {error}
-              </div>
-            )}
-            {success && (
-              <div className="bg-green-50 border border-green-100 text-green-600 p-4 rounded-xl text-sm flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full" /> Profile
-                updated successfully! Redirecting...
-              </div>
-            )}
-
-            {/* 1. Personal Details Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-              <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
-                <User className="text-red-600" size={20} />
-                <h3 className="text-lg font-bold text-gray-900">
-                  Personal Details
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InputGroup label="Full Name" icon={User}>
-                  <input
-                    type="text"
-                    name="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    className="form-input"
-                    placeholder="Enter your name"
-                  />
-                </InputGroup>
-
-                <InputGroup label="Date of Birth" icon={Calendar}>
-                  <input
-                    type="date"
-                    name="dateOfBirth"
-                    value={form.dateOfBirth}
-                    onChange={handleChange}
-                    className="form-input"
-                  />
-                </InputGroup>
-
-                <InputGroup label="Gender" icon={User}>
-                  <div className="relative">
-                    <select
-                      name="gender"
-                      value={form.gender}
-                      onChange={handleChange}
-                      className="form-input appearance-none cursor-pointer">
-                      <option value="" disabled>
-                        Select Gender
-                      </option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <ChevronRight
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 rotate-90 pointer-events-none"
-                      size={16}
-                    />
-                  </div>
-                </InputGroup>
-              </div>
-            </div>
-
-            {/* 2. Address Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-              <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
-                <MapPin className="text-red-600" size={20} />
-                <h3 className="text-lg font-bold text-gray-900">
-                  Address Details
-                </h3>
-              </div>
-
-              <div className="space-y-6">
-                <InputGroup label="Street Address" icon={Home}>
-                  <input
-                    type="text"
-                    name="addressLine1"
-                    value={form.addressLine1}
-                    onChange={handleChange}
-                    className="form-input"
-                    placeholder="House No, Street, Landmark"
-                  />
-                </InputGroup>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <InputGroup label="City">
-                    <input
-                      type="text"
-                      name="city"
-                      value={form.city}
-                      onChange={handleChange}
-                      className="form-input"
-                    />
-                  </InputGroup>
-
-                  <InputGroup label="State">
-                    <input
-                      type="text"
-                      name="state"
-                      value={form.state}
-                      onChange={handleChange}
-                      className="form-input"
-                    />
-                  </InputGroup>
-
-                  <InputGroup label="Pincode">
-                    <input
-                      type="text"
-                      name="pincode"
-                      value={form.pincode}
-                      onChange={handleChange}
-                      className="form-input"
-                    />
-                  </InputGroup>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-4 pt-2">
-              <button
-                type="button"
-                onClick={() => navigate("/user/profile")}
-                className="px-6 py-3 rounded-xl font-bold text-gray-600 hover:bg-white border border-transparent hover:border-gray-200 transition-all text-sm">
-                Cancel
+              <button className="absolute bottom-1 right-1 bg-black text-white p-2.5 rounded-full shadow-xl hover:bg-[#ff356c] transition-colors border-4 border-white">
+                <Camera size={14} />
               </button>
+            </div>
 
+            <div className="space-y-1">
+              <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">
+                Email Address
+              </p>
+              <p className="text-sm font-medium text-gray-600">{user?.email}</p>
+            </div>
+          </aside>
+
+          {/* RIGHT: Specification Form */}
+          <form
+            onSubmit={handleSubmit}
+            className="flex-1 space-y-12 bg-white p-10 rounded-sm border border-gray-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.03)]">
+            {/* PERSONAL SECTION */}
+            <div className="space-y-8">
+              <div className="flex items-center gap-3">
+                <UserIcon size={16} className="text-gray-300" />
+                <h3 className="text-[11px] font-black text-gray-950 uppercase tracking-[0.3em]">
+                  Personal Specification
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <ShopifyInput
+                  label="Legal Name"
+                  name="name"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
+                <ShopifyInput
+                  label="Birth Date"
+                  type="date"
+                  name="dateOfBirth"
+                  value={form.dateOfBirth}
+                  onChange={(e) =>
+                    setForm({ ...form, dateOfBirth: e.target.value })
+                  }
+                />
+
+                <div className="flex flex-col gap-3 group">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-focus-within:text-[#ff356c] transition-colors">
+                    Gender Identification
+                  </label>
+                  <select
+                    value={form.gender}
+                    onChange={(e) =>
+                      setForm({ ...form, gender: e.target.value })
+                    }
+                    className="w-full h-12 bg-gray-50 border-transparent border-b-2 border-b-gray-100 focus:border-b-[#ff356c] focus:bg-white outline-none text-xs font-bold transition-all px-4">
+                    <option value="" disabled>
+                      Select Orientation
+                    </option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* LOGISTICS SECTION */}
+            <div className="space-y-8">
+              <div className="flex items-center gap-3">
+                <Globe size={16} className="text-gray-300" />
+                <h3 className="text-[11px] font-black text-gray-950 uppercase tracking-[0.3em]">
+                  Logistics Coordinates
+                </h3>
+              </div>
+
+              <div className="space-y-8">
+                <ShopifyInput
+                  label="Street Residence"
+                  name="addressLine1"
+                  value={form.addressLine1}
+                  onChange={(e) =>
+                    setForm({ ...form, addressLine1: e.target.value })
+                  }
+                  placeholder="Apartment, suite, or unit number"
+                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <ShopifyInput
+                    label="City"
+                    name="city"
+                    value={form.city}
+                    onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  />
+                  <ShopifyInput
+                    label="Region / State"
+                    name="state"
+                    value={form.state}
+                    onChange={(e) =>
+                      setForm({ ...form, state: e.target.value })
+                    }
+                  />
+                  <ShopifyInput
+                    label="Pincode"
+                    name="pincode"
+                    value={form.pincode}
+                    onChange={(e) =>
+                      setForm({ ...form, pincode: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* FINAL ACTION */}
+            <div className="pt-8 border-t border-gray-50 flex flex-col items-center gap-6">
               <button
-                type="submit"
                 disabled={loading}
-                className="flex items-center gap-2 px-8 py-3 bg-gray-900 hover:bg-black text-white rounded-xl font-bold shadow-lg shadow-gray-200 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:transform-none text-sm">
+                className="w-full bg-black text-white py-6 text-[11px] font-black uppercase tracking-[0.5em] hover:bg-[#ff356c] transition-all duration-700 disabled:opacity-30 shadow-2xl flex items-center justify-center gap-4">
                 {loading ? (
-                  <Loader2 size={18} className="animate-spin" />
+                  <Loader2 size={16} className="animate-spin" />
                 ) : (
-                  <Save size={18} />
+                  "Authorize Manifest"
                 )}
-                {loading ? "Saving Changes..." : "Save Changes"}
               </button>
+              <p className="text-[9px] text-gray-300 uppercase tracking-widest">
+                Protocol: Secure Data-Tunnel Active (AES-256)
+              </p>
             </div>
-          </div>
-        </form>
-      </div>
-
-      {/* CSS Utility for inputs to keep JSX clean */}
-      <style>{`
-        .form-input {
-          width: 100%;
-          height: 48px;
-          padding-left: 12px;
-          padding-right: 12px;
-          border-radius: 10px;
-          border: 1px solid #E5E7EB;
-          background-color: #F9FAFB;
-          font-size: 14px;
-          color: #111827;
-          transition: all 0.2s;
-          outline: none;
-        }
-        .form-input:focus {
-          background-color: #FFFFFF;
-          border-color: #EF4444; /* Red-500 */
-          box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
-        }
-      `}</style>
+          </form>
+        </div>
+      </main>
     </div>
   );
 };
 
-// --- Helper Component for Inputs ---
-const InputGroup = ({ label, icon: Icon, children }) => (
-  <div className="w-full">
-    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 ml-1">
+const ShopifyInput = ({ label, type = "text", ...props }) => (
+  <div className="flex flex-col gap-3 group">
+    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-focus-within:text-[#ff356c] transition-colors">
       {label}
     </label>
-    <div className="relative group">
-      {Icon && (
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10 group-focus-within:text-red-500 transition-colors">
-          <Icon size={18} />
-        </div>
-      )}
-      {/* Clone child to add padding if icon exists */}
-      {React.cloneElement(children, {
-        style: Icon ? { paddingLeft: "40px" } : {},
-      })}
-    </div>
+    <input
+      type={type}
+      {...props}
+      className="w-full h-12 bg-gray-50 border-transparent border-b-2 border-b-gray-100 focus:border-b-[#ff356c] focus:bg-white outline-none text-[13px] font-medium text-gray-950 transition-all px-4 placeholder:text-gray-200"
+    />
   </div>
 );
 

@@ -2,20 +2,26 @@ import React from "react";
 import DesktopNavbar from "./DesktopNavbarDesign";
 import MobileTopbar from "./MobileNavbarDesign";
 import promoData from "../../data/promoData.json";
-// import { useCart } from "../../../../context/CartContext";
-// import { useWishlist } from "../../../../context/WishlistContext";
+
 import { categoryMenuItems } from "../../data/categoryMenuItems";
 
-const UserNavbar = () => {
-  // const { count: cartCount } = useCart();
-  // const { count: wishlistCount } = useWishlist();
-  const cartCount = 15;
-  const wishlistCount = 15;
+// 1. Import your custom hooks (adjust the paths to your actual context files)
+import { useCart } from "../../../../features/cart/context/CartContext";
+import { useWishlist } from "../../../../features/wishlist/context/WishlistContext";
 
-  console.log(wishlistCount);
+const UserNavbar = () => {
+  // 2. Extract values from context
+  // Destructuring based on your commented-out code
+  const { cart } = useCart();
+  const { wishlist } = useWishlist();
+
+  // 3. Calculate counts (assuming items are stored in an array)
+  const cartCount = cart?.length || 0;
+  const wishlistCount = wishlist?.length || 0;
+  // console.log(cartCount);
   return (
     <>
-      {/* Desktop */}
+      {/* Desktop View */}
       <div className="hidden md:block">
         <DesktopNavbar
           cartCount={cartCount}
@@ -25,7 +31,7 @@ const UserNavbar = () => {
         />
       </div>
 
-      {/* Mobile */}
+      {/* Mobile View */}
       <div className="block md:hidden">
         <MobileTopbar
           promoData={promoData}

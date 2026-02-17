@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useProducts } from "../../product/hook/useProducts";
-import { useWishlist } from "../context/WishlistContext";
-import Notification from "../../../../shared/components/Notification";
+import { useWishlist } from "../../wishlist/context/WishlistContext";
 import EmptyWishlist from "./EmptyWishlist";
 import MoveToCartPopUp from "../components/pop-up/MoveToCartPopUp";
 import { WishlistCard } from "../components/cards/WishlistCard";
+import NotificationProduct from "../../../components/cards/NotificationProduct";
 
 const WishlistPage = () => {
   const { wishlist, loading: wishlistLoading } = useWishlist();
@@ -64,10 +64,10 @@ const WishlistPage = () => {
      RENDER
   -------------------------- */
   return (
-    <div className="max-w-9xl mx-auto px-1 md:px-4 py-3 md:py-5">
+    <div className="max-w-9xl mt-15 md:mt-35 mx-auto px-1 md:px-4 py-3 md:py-5">
       {/* Notification */}
       {notification && (
-        <Notification
+        <NotificationProduct
           type={notification.type}
           message={notification.message}
           onClose={() => setNotification(null)}

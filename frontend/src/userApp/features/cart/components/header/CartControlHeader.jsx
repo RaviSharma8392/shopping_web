@@ -8,7 +8,7 @@ const CartControlHeader = ({
   onClearCart,
   totalPrice,
 }) => {
-  console.log(selectedItems);
+  // console.log(selectedItems);
   const allSelected =
     selectedItems.length === cartItems.length && cartItems.length > 0;
 

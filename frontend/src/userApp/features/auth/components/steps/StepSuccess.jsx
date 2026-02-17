@@ -1,92 +1,85 @@
 import React from "react";
-import {
-  Check,
-  Mail,
-  ArrowRight,
-  ShieldCheck,
-  ExternalLink,
-} from "lucide-react";
 import { Link } from "react-router-dom";
 
 const StepSuccess = ({
   signupMethod = "email",
   email = "user@example.com",
 }) => {
-  // Dynamic Content Logic
   const isGoogle = signupMethod === "google";
 
   return (
-    <div className="w-full max-w-md mx-auto animate-fadeIn font-sans">
-      {/* MAIN CARD */}
-      <div className="bg-white overflow-hidden text-center p-8 md:p-10">
-        {/* 1. ANIMATED SUCCESS ICON */}
-        <div className="relative mb-8 flex justify-center">
-          {/* Outer Ring */}
-          <div className="absolute inset-0 bg-green-50 rounded-full scale-150 animate-pulse opacity-50"></div>
+    <div className="fixed inset-0 bg-white flex flex-col items-center justify-center px-6 text-center z-[100]">
+      {/* 1. MINIMAL SUCCESS ICON */}
+      <div className="relative mb-12">
+        {/* Subtle breath ring */}
+        <div className="absolute inset-0 bg-red-50 rounded-full scale-150 opacity-40"></div>
 
-          {/* Icon Container */}
-          <div className="relative w-20 h-20 bg-green-100 rounded-full flex items-center justify-center shadow-sm">
-            <div className="bg-green-600 rounded-full p-2">
-              <Check className="w-8 h-8 text-white stroke-[3]" />
-            </div>
-          </div>
+        <div className="relative w-20 h-20 bg-white shadow-2xl shadow-red-100 rounded-full flex items-center justify-center z-10 border border-slate-50">
+          <svg
+            className="w-8 h-8 text-[#ff356c]"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={3}>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
         </div>
+      </div>
 
-        {/* 2. HEADLINES */}
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 tracking-tight">
-          {isGoogle ? "Welcome to the family! 🎉" : "Verify your email"}
+      {/* 2. HEADLINES */}
+      <div className="max-w-lg">
+        <h2 className="text-4xl md:text-6xl font-light tracking-tighter text-slate-900 mb-6">
+          {isGoogle ? "Registration " : "Verify your "}
+          <span className="italic font-serif text-[#ff356c]">
+            {isGoogle ? "Complete." : "Inbox."}
+          </span>
         </h2>
 
-        <p className="text-gray-500 text-sm leading-relaxed mb-8 max-w-[280px] mx-auto">
+        <p className="text-slate-500 text-lg md:text-xl leading-relaxed mb-12 max-w-md mx-auto font-light">
           {isGoogle ? (
-            "Your account has been successfully created via Google. You are ready to go!"
+            "Your identity has been verified via Google. Welcome to the Mnmukt ecosystem."
           ) : (
             <>
-              We've sent a verification link to{" "}
-              <span className="font-semibold text-gray-800">{email}</span>.
+              A security link has been dispatched to <br />
+              <span className="text-slate-950 font-medium underline decoration-red-200 underline-offset-8">
+                {email}
+              </span>
             </>
           )}
         </p>
 
-        {/* 3. INSTRUCTION BOX (Only for Email) */}
-        {!isGoogle && (
-          <div className="bg-gray-50 rounded-xl p-4 mb-8 border border-gray-100 text-left flex gap-3">
-            <div className="bg-white p-2 rounded-lg border border-gray-200 shadow-sm h-fit">
-              <Mail className="w-5 h-5 text-gray-600" />
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-gray-900">
-                Next Step:
-              </h4>
-              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                Click the link in the email to activate your account. Check your
-                spam folder if it doesn't arrive within a few minutes.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* 4. ACTIONS */}
-        <div className="space-y-3">
+        {/* 3. PRIMARY ACTION */}
+        <div className="flex flex-col items-center gap-8">
           <Link
-            to="/dashboard"
-            className="w-full flex items-center justify-center gap-2 py-3.5 bg-gray-900 hover:bg-black text-white font-medium rounded-xl transition-all shadow-lg shadow-gray-200 active:scale-[0.98]">
-            {isGoogle ? "Go to Dashboard" : "I've Verified My Email"}
-            <ArrowRight size={18} />
+            to="/"
+            className="px-14 py-5 bg-slate-950 text-white text-[10px] uppercase tracking-[0.5em] font-black hover:bg-[#ff356c] transition-all shadow-xl shadow-slate-200">
+            {isGoogle ? "Enter Dashboard" : "I have verified"}
           </Link>
 
-          {!isGoogle && (
-            <button className="w-full py-3 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">
-              Resend verification email
+          {/* 4. SUB ACTION */}
+          {!isGoogle ? (
+            <button className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-300 hover:text-slate-900 transition-colors">
+              Resend Identity Link
             </button>
+          ) : (
+            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-300">
+              Mnmukt Security Protocol Active
+            </p>
           )}
         </div>
       </div>
 
-      {/* 5. FOOTER TRUST BADGE */}
-      <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-400">
-        <ShieldCheck size={14} className="text-green-600" />
-        <span>Your data is secure and encrypted</span>
+      {/* 5. FOOTER BADGE */}
+      <div className="absolute bottom-12 flex items-center gap-3 opacity-30">
+        <div className="w-8 h-[1px] bg-slate-900"></div>
+        <span className="text-[8px] uppercase tracking-[0.6em] font-bold text-slate-900">
+          Encrypted & Secure
+        </span>
+        <div className="w-8 h-[1px] bg-slate-900"></div>
       </div>
     </div>
   );

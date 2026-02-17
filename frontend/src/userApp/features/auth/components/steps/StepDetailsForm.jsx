@@ -1,156 +1,127 @@
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
 
 const StepDetailsForm = ({
+  setStep,
   userInfo,
   setUserInfo,
-  onSubmit,
   loading,
-  setStep,
+  onSubmit,
 }) => {
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [localError, setLocalError] = useState("");
 
-  // Update field
-  const updateField = (key, value) => {
-    setUserInfo((prev) => ({ ...prev, [key]: value }));
-    if (errors[key]) {
-      setErrors((prev) => ({ ...prev, [key]: "" }));
-    }
+  const handleChange = (e) => {
+    setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
+    setLocalError("");
   };
 
-  // Handle blur
-  const handleBlur = (field) => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-    validateField(field, userInfo[field]);
-  };
-
-  // Validate field
-  const validateField = (field, value) => {
-    let error = "";
-
-    switch (field) {
-      case "name":
-        if (!value.trim()) error = "Name is required";
-        break;
-      case "password":
-        if (!value.trim()) error = "Password is required";
-        else if (value.length < 6)
-          error = "Password must be at least 6 characters";
-        break;
-      default:
-        break;
-    }
-
-    setErrors((prev) => ({ ...prev, [field]: error }));
-    return !error;
-  };
-
-  // Handle submit
-  const handleSubmit = (e) => {
+  const handleNext = (e) => {
     e.preventDefault();
-
-    const valid =
-      validateField("name", userInfo.name) &
-      validateField("password", userInfo.password);
-
-    if (valid) {
-      onSubmit();
-    } else {
-      setTouched({
-        name: true,
-        password: true,
-      });
+    if (!userInfo.name || !userInfo.password) {
+      setLocalError("All fields are required");
+      return;
     }
+    if (userInfo.password !== userInfo.confirmPassword) {
+      setLocalError("Passwords do not match");
+      return;
+    }
+    onSubmit();
   };
 
   return (
-    <div className="animate-fadeIn max-w-md mx-auto w-full">
+    <div className="w-full">
       {/* Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-2xl md:text-3xl uppercase font-[crimsonPro] text-gray-900">
-          Sign Up
+      <div className="mb-12">
+        <h2 className="text-3xl font-light tracking-tighter text-slate-900 mb-2">
+          Secure{" "}
+          <span className="italic font-serif text-[#ff356c]">Profile.</span>
         </h2>
-        <p className="text-gray-600 mt-1 text-sm md:text-base">
-          Complete your account setup
+        <p className="text-slate-400 text-sm">
+          Define your identity and access credentials.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* NAME */}
-        <div>
-          <div
-            className={`relative rounded-xl border bg-white transition-all ${
-              errors.name && touched.name
-                ? "border-red-500"
-                : "border-gray-300 focus-within:border-[#B4292F]"
-            }`}>
-            <input
-              type="text"
-              value={userInfo.name}
-              onChange={(e) => updateField("name", e.target.value)}
-              onBlur={() => handleBlur("name")}
-              className="peer w-full bg-transparent px-4 pt-5 pb-2 outline-none rounded-xl"
-            />
-            <label className="absolute left-4 top-3 text-gray-500 text-sm transition-all peer-focus:-translate-y-3 peer-focus:text-xs peer-focus:text-[#B4292F] peer-valid:-translate-y-3 peer-valid:text-xs">
-              Name *
-            </label>
-          </div>
-          {errors.name && touched.name && (
-            <p className="text-red-600 text-sm mt-1">{errors.name}</p>
-          )}
+      <form onSubmit={handleNext} className="space-y-10">
+        {/* Name Input */}
+        <div className="relative group">
+          <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-400 group-focus-within:text-[#ff356c] transition-colors">
+            Full Name
+          </label>
+          <input
+            type="text"
+            name="name"
+            placeholder="John Doe"
+            required
+            className="w-full bg-transparent border-b border-slate-200 py-3 outline-none focus:border-[#ff356c] text-lg transition-all placeholder:text-slate-100"
+            value={userInfo.name}
+            onChange={handleChange}
+          />
         </div>
 
-        {/* PASSWORD */}
-        <div>
-          <div
-            className={`relative rounded-xl border bg-white transition-all ${
-              errors.password && touched.password
-                ? "border-red-500"
-                : "border-gray-300 focus-within:border-[#B4292F]"
-            }`}>
-            <input
-              type={showPassword ? "text" : "password"}
-              value={userInfo.password || ""}
-              onChange={(e) => updateField("password", e.target.value)}
-              onBlur={() => handleBlur("password")}
-              className="peer w-full bg-transparent px-4 pt-5 pb-2 outline-none rounded-xl"
-            />
-
+        {/* Password Input */}
+        <div className="relative group">
+          <div className="flex justify-between items-end mb-1">
+            <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-400 group-focus-within:text-[#ff356c] transition-colors">
+              Password
+            </label>
             <button
               type="button"
-              className="absolute right-4 top-4 text-gray-500"
-              onClick={() => setShowPassword(!showPassword)}>
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              onClick={() => setShowPassword(!showPassword)}
+              className="text-[10px] uppercase tracking-widest text-[#ff356c] font-black">
+              {showPassword ? "Hide" : "Show"}
             </button>
-
-            <label className="absolute left-4 top-3 text-gray-500 text-sm transition-all peer-focus:-translate-y-3 peer-focus:text-xs peer-focus:text-[#B4292F] peer-valid:-translate-y-3 peer-valid:text-xs">
-              Password *
-            </label>
           </div>
-          {errors.password && touched.password && (
-            <p className="text-red-600 text-sm mt-1">{errors.password}</p>
-          )}
+          <input
+            type={showPassword ? "text" : "password"}
+            name="password"
+            placeholder="••••••••"
+            required
+            className="w-full bg-transparent border-b border-slate-200 py-3 outline-none focus:border-[#ff356c] text-lg transition-all placeholder:text-slate-100"
+            value={userInfo.password}
+            onChange={handleChange}
+          />
         </div>
 
-        {/* SUBMIT BUTTON */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 bg-[#B4292F] text-white text-center font-semibold rounded-xl shadow-md hover:bg-[#9c2328] transition disabled:opacity-50">
-          {loading ? "Creating Account..." : "Complete Profile"}
-        </button>
-      </form>
+        {/* Confirm Password */}
+        <div className="relative group">
+          <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-400 group-focus-within:text-[#ff356c] transition-colors">
+            Confirm Password
+          </label>
+          <input
+            type={showPassword ? "text" : "password"}
+            name="confirmPassword"
+            placeholder="••••••••"
+            required
+            className="w-full bg-transparent border-b border-slate-200 py-3 outline-none focus:border-[#ff356c] text-lg transition-all placeholder:text-slate-100"
+            value={userInfo.confirmPassword}
+            onChange={handleChange}
+          />
+        </div>
 
-      {/* BACK BUTTON */}
-      <div className="text-center mt-6">
-        <button
-          onClick={() => setStep(1)}
-          className="text-gray-600 hover:text-black text-sm">
-          ← Back to previous step
-        </button>
-      </div>
+        {/* Local Error Display */}
+        {localError && (
+          <p className="text-[#ff356c] text-[10px] uppercase tracking-widest font-black text-center">
+            {localError}
+          </p>
+        )}
+
+        {/* Action Buttons */}
+        <div className="pt-4 space-y-6">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-5 bg-slate-950 text-white font-black text-[10px] uppercase tracking-[0.4em] hover:bg-[#ff356c] transition-colors disabled:opacity-50">
+            {loading ? "Creating Account..." : "Complete Registration"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStep(1)}
+            className="w-full text-[10px] uppercase tracking-[0.3em] font-bold text-slate-300 hover:text-slate-900 transition-colors">
+            Go Back
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

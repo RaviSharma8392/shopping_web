@@ -9,131 +9,146 @@ import {
   Star,
 } from "lucide-react";
 
-const ProfileHeader = ({ user, loading }) => {
+const ProfileHeader = ({ user, cartCount, wishlistCount, loading }) => {
   const navigate = useNavigate();
 
-  // 1. CLEAN SKELETON (No pulsing colors, just light gray)
+  // --- MNMUKT SKELETON ---
   if (loading) {
     return (
-      <div className="bg-white border-b border-gray-200">
-        <div className="h-14 bg-[#232f3e]" />
-        <div className="p-5 flex items-center space-x-4">
-          <div className="w-16 h-16 bg-gray-100 rounded-full" />
-          <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-100 w-1/3" />
-            <div className="h-3 bg-gray-50 w-1/2" />
+      <div className="bg-white border-b border-slate-50">
+        <div className="h-14 flex items-center px-6 border-b border-slate-50">
+          <div className="w-4 h-4 bg-slate-50 rounded-full" />
+        </div>
+        <div className="p-8 flex items-center space-x-6">
+          <div className="w-20 h-20 bg-slate-50 rounded-full" />
+          <div className="flex-1 space-y-3">
+            <div className="h-4 bg-slate-50 w-1/4" />
+            <div className="h-2 bg-slate-50 w-1/2" />
           </div>
         </div>
       </div>
     );
   }
 
-  const userName = user?.name || "Guest User";
-  const userEmail = user?.email || "Sign in for better experience";
+  const userName = user?.name || "Guest Connoisseur";
+  const userEmail = user?.email || "Welcome to Mnmukt";
 
   return (
-    <div className="bg-white border-b border-gray-200">
-      {/* --- A. TOP NAV BAR (Amazon Squid Ink Color) --- */}
-      <div className="flex items-center justify-between px-4 h-14 bg-[#232f3e] text-white">
+    <div className="bg-white border-b border-slate-50 font-sans">
+      {/* --- A. TOP NAV BAR (Minimalist & White) --- */}
+      <div className="flex items-center justify-between px-6 h-16 bg-white">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1 active:opacity-70 transition-opacity">
-          <ChevronLeft size={22} />
-          <span className="text-sm font-bold uppercase tracking-tight">
+          className="flex items-center gap-2 hover:text-[#ff356c] transition-colors group">
+          <ChevronLeft
+            size={18}
+            className="text-slate-400 group-hover:text-[#ff356c]"
+          />
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-slate-900">
             Back
           </span>
         </button>
 
-        <h1 className="text-xs font-bold uppercase tracking-[0.1em]">
-          Your Account
+        <h1 className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-900">
+          Identity
         </h1>
 
-        <button onClick={() => navigate("/settings")} className="p-2">
-          <Settings size={20} className="opacity-70" />
+        <button onClick={() => navigate("/settings")} className="p-2 group">
+          <Settings
+            size={18}
+            className="text-slate-300 group-hover:text-[#ff356c] transition-colors"
+          />
         </button>
       </div>
 
-      {/* --- B. USER INFO (Pure White Theme) --- */}
-      <div className="p-5 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          {/* Avatar with simple Amazon Orange Border */}
+      {/* --- B. USER INFO (Luxury Boutique Style) --- */}
+      <div className="px-8 py-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-center space-x-6">
+          {/* Avatar with Minimal Pink Border */}
           <div className="relative">
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center border border-gray-200 overflow-hidden">
-              {user?.photoURL ? (
-                <img
-                  src={user.photoURL}
-                  alt="profile"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User size={30} className="text-gray-300" strokeWidth={1.5} />
-              )}
+            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center border border-slate-100 p-1 overflow-hidden">
+              <div className="w-full h-full rounded-full overflow-hidden bg-slate-50 flex items-center justify-center">
+                {user?.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt="profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User size={32} className="text-slate-200" strokeWidth={1} />
+                )}
+              </div>
             </div>
-            <button className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-full shadow border border-gray-100 text-gray-500">
-              <Camera size={10} />
+            <button className="absolute bottom-1 right-1 bg-white p-2 rounded-full shadow-sm border border-slate-50 text-slate-400 hover:text-[#ff356c] transition-colors">
+              <Camera size={12} />
             </button>
           </div>
 
           {/* Identity Text */}
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 leading-tight">
-              {userName}
+          <div className="space-y-1">
+            <h2 className="text-3xl font-light tracking-tighter text-slate-900 leading-none">
+              {userName.split(" ")[0]}{" "}
+              <span className="italic font-serif text-[#ff356c]">
+                {userName.split(" ")[1] || ""}
+              </span>
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5 font-medium">
+            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">
               {userEmail}
             </p>
 
             {/* Status Badge */}
-            <div className="mt-2 flex items-center gap-1">
-              <ShieldCheck size={12} className="text-green-600" />
-              <span className="text-[9px] font-black text-green-700 uppercase tracking-wider">
+            <div className="pt-2 flex items-center gap-2">
+              <ShieldCheck size={12} className="text-[#ff356c]" />
+              <span className="text-[9px] font-black text-slate-900 uppercase tracking-[0.2em]">
                 Verified Member
               </span>
             </div>
           </div>
         </div>
 
-        {/* Prime Indicator (Optional) */}
+        {/* Premium Indicator (Mnmukt Gold/Pink) */}
         {user?.isPremium && (
-          <div className="flex items-center gap-1 text-[#ff9900] bg-orange-50 px-2 py-1 rounded">
-            <Star size={12} fill="#ff9900" />
-            <span className="text-[10px] font-bold uppercase">Prime</span>
+          <div className="self-start md:self-center flex items-center gap-2 border border-red-100 bg-red-50/30 px-4 py-2 rounded-full">
+            <Star size={10} fill="#ff356c" className="text-[#ff356c]" />
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#ff356c]">
+              Elite Connoisseur
+            </span>
           </div>
         )}
       </div>
 
-      {/* --- C. UTILITY ROW (Flipkart Grid Style) --- */}
-      <div className="grid grid-cols-3 border-t border-gray-100 divide-x divide-gray-100">
+      {/* --- C. UTILITY ROW (Minimalist HUD Style) --- */}
+      <div className="grid grid-cols-3 border-t border-slate-50">
         <button
           onClick={() => navigate("/orders")}
-          className="py-4 text-center active:bg-gray-50 transition-colors">
-          <span className="block text-base font-bold text-gray-900">
-            {user?.orderCount || 0}
+          className="py-8 text-center hover:bg-slate-50 transition-colors border-r border-slate-50">
+          <span className="block text-xl font-light text-slate-900 mb-1">
+            {cartCount || 0}
           </span>
-          <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">
-            Orders
+          <span className="text-[9px] text-slate-300 font-black uppercase tracking-[0.3em]">
+            Cart Items
           </span>
         </button>
 
         <button
           onClick={() => navigate("/wishlist")}
-          className="py-4 text-center active:bg-gray-50 transition-colors">
-          <span className="block text-base font-bold text-gray-900">
-            {user?.wishlistCount || 0}
+          className="py-8 text-center hover:bg-slate-50 transition-colors border-r border-slate-50">
+          <span className="block text-xl font-light text-slate-900 mb-1">
+            {wishlistCount || 0}
           </span>
-          <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">
+          <span className="text-[9px] text-slate-300 font-black uppercase tracking-[0.3em]">
             Wishlist
           </span>
         </button>
 
         <button
           onClick={() => navigate("/wallet")}
-          className="py-4 text-center active:bg-gray-50 transition-colors">
-          <span className="block text-base font-bold text-[#B4292F]">
+          className="py-8 text-center hover:bg-slate-50 transition-colors">
+          <span className="block text-xl font-light text-[#ff356c] mb-1">
             ₹{user?.wallet || 0}
           </span>
-          <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">
-            Wallet
+          <span className="text-[9px] text-slate-300 font-black uppercase tracking-[0.3em]">
+            Credits
           </span>
         </button>
       </div>

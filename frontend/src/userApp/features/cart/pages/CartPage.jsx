@@ -12,10 +12,10 @@ import { useNavigate } from "react-router-dom";
 const CartPage = () => {
   const navigate = useNavigate();
   const { cart, updateQuantity, updateSize, remove, clear } = useCart();
-  console.log(cart);
+  // console.log(cart);
   // Ensure you are importing the SAFE version of getProductById or getProductsByIds
   const { getProductById } = useProducts();
-  console.log(cart);
+  // console.log(cart);
   const [products, setProducts] = useState([]);
   const [loadingDetails, setLoadingDetails] = useState(true); // Local loading state
   const [selected, setSelected] = useState([]);
@@ -126,7 +126,7 @@ const CartPage = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+    <div className="max-w-7xl  mb-6 mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
       {/* LEFT - CART ITEMS */}
       <div className="flex-1 space-y-6">
         <CartControlHeader

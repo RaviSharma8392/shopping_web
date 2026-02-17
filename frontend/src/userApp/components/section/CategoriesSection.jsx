@@ -3,7 +3,7 @@ import CategoriesCard from "../cards/CategoriesCard";
 import { Leaf } from "lucide-react"; // Optional decorative icon
 
 const CategoriesSection = ({ categories, loading }) => {
-  // --- Modern Skeleton Loader ---
+  // console.log(categories);
   if (loading) {
     return (
       <section className="w-full px-4 md:px-12 py-12">

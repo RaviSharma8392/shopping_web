@@ -2,36 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser, googleSignup } from "../services/authService";
 
-const GoogleButton = ({ onClick, loading }) => (
-  <button
-    onClick={onClick}
-    disabled={loading}
-    className="w-full py-3 mb-5 rounded-lg border border-gray-300 flex items-center justify-center gap-3 text-gray-700 font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-70">
-    <img
-      src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAADmUlEQVR4Ab1XA5AjQRQ9G6UrnV0627Zt27Zt27Zt27Z9FyeXiZN3v1NzW9vTmd3J6lW9cKbf6690EmlFIBDIQGzr9/vXE+8RjUSPTIP82Xq6pg27VvPCGoTz08KbiE5oBF3rIG6ge/PGWBhAGlpkAdEHzRCMeInzyEjqcHedj258gbgBM/KU1syjVbwo3aBHCPh+foe0YyMsw/vC0KI2dDVLQ1ejFAzNasI8tDekLWvh+/5VzYQOQGENOxfFfb9+wDplNHTVS0JXrUTUpGusk0aye0Ka4CPBi6cNFXbn2RPQ16vIi2igvn4luC6dVUuHWBOs4KCAtGtzOKICbXOnqKVjbqhW8yl2rrqwqUcb2Nctg/P4QThPHKLXy2Hq2ZYXXzgTCARUu4NLBetzZbHp61YQhI3tG8N9/zbU4L53C4bW9fF3+XwtnbH+f79nVA4Z++IBgri5fxcEbDZEh4Bk19qaEkUhPQt/W24Bxwd4z6SEdVSOCHHWcn6LCXEN0m7Fwr+ec/ZpJrznkwcpLcsEfZ3icJ4+hvgAaa9hBu5x+X9Qk4lH0H0wJ+D1xpeB28yAEZHgvZqFM+B71gZRoeoMu2ZeeuEVBhMz4OEMXEjJGfC/nxBnBnbc8CgNuBPUwKYr7pAGDFGm4GnrODOw97YQAZ1YhA9rcQa+Xy0Ij9+LcPFR5xcMXHnlFYtQbMPZEeLHTuRE+d2NcfjDeYSL3bc8goFfloDYhuwMxw+iT3CcT42Zh4uh+O5mQdY83BUGpxla8dcZQPPFEifeeY0j1CBqGTxskhPu20W3pjJhju3PjIDFHf0o9viAUbucwu73iPmXAKT7/2O0AZHw065Dxf3tBBP1j/bC1R/3oYa35s/odmQ3CVo5cRYNh1sI/9rIP8d5/X6+0k59vioLi2x+ciAWPNyEvW9PYd+701jxdAe6nx+HErubB78vtXkUqsz5FmHg2mufUtxDmrmVB5J5UGDb6yOCuFaW2NEZFRfeFXpfNjBL7Rj+DAqc+XKd0tE+bAOl9rTEuqdHQok/BpBK7VyYRz69cvgl6THu5iKU3NNck3ivixPxyvQhlPhvALmi+0NSmDfBF+eWV4fQ//JU1DnSA6X3tmQ7pTbthh4XJgRr4bXpI2QI4rTBQurKYiSeIo7Awi7sXIOJ1Oz0SvTGQthDnKWW83CisZ4ohSEsEdfKrRY3YAdIYis2v4m3iTqiW6ZO/mwNG6/yhNOEf6HhfzYhUKeuAAAAAElFTkSuQmCC"
-      alt="Google"
-      className="w-5 h-5"
-      onError={(e) => {
-        e.target.style.display = "none";
-        e.target.nextSibling.style.display = "block";
-      }}
-    />
-    <svg
-      className="w-5 h-5 hidden"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-      />
-    </svg>
-    {loading ? "Loading..." : "Continue with Google"}
-  </button>
-);
-
 const LoginPage = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
@@ -39,12 +9,10 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Custom color scheme
   const COLORS = {
     primary: "#ff356c",
-    secondary: "#e0e0e0",
     text: "#2d3748",
-    accent: "#fff5f7",
+    muted: "#94a3b8",
   };
 
   const handleChange = (e) => {
@@ -56,10 +24,9 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
       await loginUser(form.email, form.password);
-      navigate("/"); // redirect to home or dashboard
+      navigate("/");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -81,123 +48,115 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white md:bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white md:rounded-2xl md:shadow-lg p-8">
-        {/* Google Login */}
-        <GoogleButton onClick={handleGoogleLogin} loading={loading} />
-
-        {/* Divider */}
-        <div className="relative mb-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+    <div className="min-h-screen bg-white text-slate-900 flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        {/* Header Section */}
+        <header className="mb-12 text-center md:text-left">
+          <div className="w-8 h-8 border-2 border-[#ff356c] rounded-full mb-6 flex items-center justify-center mx-auto md:mx-0">
+            <div className="w-1 h-1 bg-[#ff356c] rounded-full" />
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">
-              Or continue with email
+          <h1 className="text-4xl font-light tracking-tighter mb-2">
+            Welcome{" "}
+            <span className="italic font-serif text-[#ff356c]">Back.</span>
+          </h1>
+          <p className="text-slate-400 text-sm tracking-wide">
+            Enter your details to access your account.
+          </p>
+        </header>
+
+        {/* Action Section */}
+        <div className="space-y-8">
+          {/* Google Auth - Minimalist */}
+          <button
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full py-4 border border-slate-100 rounded-sm flex items-center justify-center gap-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-500 hover:bg-slate-50 transition-all disabled:opacity-50">
+            <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <path
+                fill="currentColor"
+                d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C9.03,19.27 6.59,17.03 6.59,12C6.59,6.97 9.06,4.73 12.18,4.73C14.4,4.73 16.31,5.77 17.22,7.39L19.41,5.7C18.15,3.46 15.42,2 12.18,2C6.82,2 4,6.59 4,12C4,17.41 6.82,22 12.18,22C17.3,22 21.5,18.33 21.5,12C21.5,11.54 21.41,11.1 21.35,11.1V11.1Z"
+              />
+            </svg>
+            Continue with Google
+          </button>
+
+          <div className="relative flex items-center py-2">
+            <div className="flex-grow border-t border-slate-50"></div>
+            <span className="flex-shrink mx-4 text-[10px] uppercase tracking-[0.3em] text-slate-300">
+              or email
             </span>
-          </div>
-        </div>
-
-        {/* Title */}
-        <h2 className="text-3xl font-[lora] mb-2 text-center text-[#ff356c]">
-          Login
-        </h2>
-        <p className="text-sm mb-6 text-center" style={{ color: COLORS.text }}>
-          Enter your email and password to continue
-        </p>
-
-        {/* Error Message */}
-        {error && (
-          <div
-            className="p-3 rounded-lg text-sm mb-4 text-center"
-            style={{ background: COLORS.accent, color: COLORS.primary }}>
-            {error}
-          </div>
-        )}
-
-        {/* Login Form */}
-        <form className="space-y-5" onSubmit={handleSubmit}>
-          <div>
-            <label
-              className="text-sm font-medium mb-2 block"
-              style={{ color: COLORS.text }}>
-              Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={form.email}
-              onChange={handleChange}
-              required
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2"
-              style={{
-                borderColor: COLORS.secondary,
-                "--tw-ring-color": COLORS.primary,
-              }}
-            />
+            <div className="flex-grow border-t border-slate-50"></div>
           </div>
 
-          <div>
-            <label
-              className="text-sm font-medium mb-2 block"
-              style={{ color: COLORS.text }}>
-              Password
-            </label>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-10">
+            {error && (
+              <p className="text-[#ff356c] text-[10px] uppercase tracking-widest font-bold text-center">
+                {error}
+              </p>
+            )}
+
             <div className="relative">
+              <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-400 block mb-2">
+                Email Address
+              </label>
+              <input
+                type="email"
+                name="email"
+                required
+                value={form.email}
+                onChange={handleChange}
+                placeholder="name@example.com"
+                className="w-full bg-transparent border-b border-slate-200 py-3 outline-none focus:border-[#ff356c] text-lg transition-all placeholder:text-slate-100"
+              />
+            </div>
+
+            <div className="relative">
+              <div className="flex justify-between items-end mb-2">
+                <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-400">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-[10px] uppercase tracking-widest text-[#ff356c] font-bold">
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
-                placeholder="Enter your password"
+                required
                 value={form.password}
                 onChange={handleChange}
-                required
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2"
-                style={{
-                  borderColor: COLORS.secondary,
-                  "--tw-ring-color": COLORS.primary,
-                }}
+                placeholder="••••••••"
+                className="w-full bg-transparent border-b border-slate-200 py-3 outline-none focus:border-[#ff356c] text-lg transition-all placeholder:text-slate-100"
               />
-              <button
-                type="button"
-                className="absolute right-4 top-3 text-sm font-medium"
-                style={{ color: COLORS.primary }}
-                onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? "Hide" : "Show"}
-              </button>
             </div>
-          </div>
 
-          <button
-            disabled={loading}
-            className="w-full py-3 rounded-lg text-white font-semibold transition hover:opacity-90 disabled:opacity-70"
-            style={{
-              background: COLORS.primary,
-            }}>
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
+            <div className="pt-4 space-y-6">
+              <button
+                disabled={loading}
+                className="w-full py-5 bg-slate-950 text-white font-black text-[10px] uppercase tracking-[0.4em] hover:bg-[#ff356c] transition-all disabled:opacity-50">
+                {loading ? "Authenticating..." : "Sign In"}
+              </button>
 
-        {/* Links */}
-        <div className="text-center mt-6 space-y-3">
-          <p className="text-sm" style={{ color: COLORS.text }}>
-            Don't have an account?{" "}
-            <Link
-              to="/account/register"
-              className="font-semibold"
-              style={{ color: COLORS.primary }}>
-              Sign Up
-            </Link>
-          </p>
-
-          <p className="text-sm" style={{ color: COLORS.text }}>
-            <Link
-              to="/account/forgot-password"
-              className="font-semibold"
-              style={{ color: COLORS.primary }}>
-              Forgot Password?
-            </Link>
-          </p>
+              <div className="flex flex-col items-center gap-4 text-[10px] uppercase tracking-[0.2em] font-bold">
+                <Link
+                  to="/auth/forgot-password"
+                  size="sm"
+                  className="text-slate-300 hover:text-[#ff356c]">
+                  Forgot Password?
+                </Link>
+                <p className="text-slate-300">
+                  New here?{" "}
+                  <Link to="/auth/signup" className="text-[#ff356c]">
+                    Create Account
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
     </div>

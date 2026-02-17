@@ -10,7 +10,7 @@ export default function AccountRoutes() {
         <Route index element={<ProfilePage />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
-      <Route path="profile/edit" element={<EditProfilePage />} />
+      <Route path="edit" element={<EditProfilePage />} />
     </Routes>
   );
 }

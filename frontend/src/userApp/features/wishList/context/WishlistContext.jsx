@@ -13,31 +13,41 @@ export const WishlistProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
 
+  /* -------------------------
+     LOAD WISHLIST FROM LOCAL DB
+  -------------------------- */
   useEffect(() => {
     let mounted = true;
-    const load = async () => {
+
+    const loadWishlist = async () => {
       setLoading(true);
       try {
         const data = await getWishlistDB();
-        if (mounted) setWishlist(data);
+        if (mounted) setWishlist(data || []);
       } catch (err) {
         console.error("Failed to load wishlist:", err);
       } finally {
         if (mounted) setLoading(false);
       }
     };
-    load();
-    return () => (mounted = false);
+
+    loadWishlist();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
+  /* -------------------------
+     ADD ITEM TO WISHLIST
+  -------------------------- */
   const add = async (product) => {
     setSyncing(true);
     try {
       const productId = typeof product === "object" ? product.id : product;
-
       if (!productId) throw new Error("Invalid productId");
 
-      const item = await addWishlistDB(productId.toString()); // <-- convert to string
+      const id = productId.toString();
+      const item = await addWishlistDB(id);
       setWishlist((prev) => [...prev, item]);
     } catch (err) {
       console.error("Failed to add to wishlist:", err);
@@ -46,11 +56,15 @@ export const WishlistProvider = ({ children }) => {
     }
   };
 
+  /* -------------------------
+     REMOVE ITEM FROM WISHLIST
+  -------------------------- */
   const removeFromWishlist = async (productId) => {
     setSyncing(true);
     try {
-      await removeWishlistDB(productId);
-      setWishlist((prev) => prev.filter((i) => i.productId !== productId));
+      const id = productId.toString();
+      await removeWishlistDB(id);
+      setWishlist((prev) => prev.filter((i) => i.productId !== id));
     } catch (err) {
       console.error("Failed to remove from wishlist:", err);
     } finally {
@@ -58,13 +72,17 @@ export const WishlistProvider = ({ children }) => {
     }
   };
 
-  // ✅ Rename toggle to toggleWishlist
+  /* -------------------------
+     TOGGLE WISHLIST ITEM
+  -------------------------- */
   const toggleWishlist = async (productId) => {
-    const exists = wishlist.some((i) => i.productId === productId);
-    console.log(productId);
-    return exists ? remove(productId) : add(productId);
+    const id = productId?.toString();
+    return isWishlisted(id) ? removeFromWishlist(id) : add(id);
   };
 
+  /* -------------------------
+     CLEAR WISHLIST
+  -------------------------- */
   const clear = async () => {
     setSyncing(true);
     try {
@@ -77,8 +95,11 @@ export const WishlistProvider = ({ children }) => {
     }
   };
 
+  /* -------------------------
+     CHECK IF ITEM IS WISHLISTED
+  -------------------------- */
   const isWishlisted = (productId) =>
-    wishlist.some((i) => i.productId === productId);
+    wishlist.some((i) => i.productId === productId?.toString());
 
   return (
     <WishlistContext.Provider
@@ -98,4 +119,7 @@ export const WishlistProvider = ({ children }) => {
   );
 };
 
+/* -------------------------
+   CUSTOM HOOK
+-------------------------- */
 export const useWishlist = () => useContext(WishlistContext);
