@@ -7,7 +7,7 @@ import { categoryMenuItems } from "../../data/categoryMenuItems";
 
 // 1. Import your custom hooks (adjust the paths to your actual context files)
 import { useCart } from "../../../../features/cart/context/CartContext";
-import { useWishlist } from "../../../../features/wishlist/context/WishlistContext";
+import { useWishlist } from "../../../../features/wishList/context/WishlistContext";
 
 const UserNavbar = () => {
   // 2. Extract values from context
