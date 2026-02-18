@@ -7,6 +7,7 @@ import UserLayout from "./userApp/layouts/UserLayout";
 import LoadingScreen from "./userApp/components/loading/LoadingScreen";
 import NotFoundPage from "./userApp/pages/NotFoundPage";
 import NotificationPermissions from "./userApp/pages/NotificationPreferences";
+import OrderDetailPage from "./userApp/pages/OrderDetailPage";
 
 /* --- 2. USER FEATURES (Lazy Loaded) --- */
 const HomePage = lazy(() => import("./userApp/pages/HomePage"));
@@ -84,19 +85,22 @@ const AppRoutes = () => {
         <Route element={<UserLayout />}>
           <Route index element={<HomePage />} />
           <Route path="categories" element={<CategoriesPage />} />
-          <Route path="product/:slug" element={<ProductDetailsPage />} />
           <Route path="wishlist" element={<WishlistPage />} />
+        </Route>
+        {/* C. PROTECTED USER FUNNEL (Checkout/History) */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/user/orders" element={<OrdersPage />} />
+          <Route path="product/:slug" element={<ProductDetailsPage />} />
+          <Route
+            path="/user/orders/:orderId"
+            element={<OrderDetailPage />}
+          />{" "}
+        </Route>
+        <Route element={<ProtectedRoute />}>
           <Route
             path="taruveda-organic-shampoo-oil/*"
             element={<TaruvedaRoutes />}
           />
-
-          {/* C. PROTECTED USER FUNNEL (Checkout/History) */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="orders" element={<OrdersPage />} />
-          </Route>
-        </Route>
-        <Route element={<ProtectedRoute />}>
           <Route path="checkout/*" element={<CheckoutRoutes />} />
         </Route>
         {/* D. ACCOUNT MANAGEMENT (Full Page Layout) */}

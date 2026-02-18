@@ -8,9 +8,10 @@ const StepSelectMethod = ({
   loading,
 }) => {
   const handleContinue = (e) => {
+    console.log("button clicked");
     e.preventDefault();
     if (email.trim()) {
-      setStep(1);
+      setStep(2);
     }
   };
 
@@ -74,18 +75,6 @@ const StepSelectMethod = ({
             {loading ? "Processing..." : "Continue with Email"}
           </button>
         </form>
-      </div>
-
-      {/* Login Link */}
-      <div className="mt-12 text-center md:text-left">
-        <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-300">
-          Have an account?{" "}
-          <a
-            href="/login"
-            className="text-[#ff356c] hover:underline underline-offset-4">
-            Sign In
-          </a>
-        </p>
       </div>
     </div>
   );

@@ -1,5 +1,11 @@
 import React, { useState, useCallback, useMemo } from "react";
-import { Share2, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import {
+  Share2,
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
+  Heart,
+} from "lucide-react";
 import FullScreenImageViewer from "../view/FullScreenImageViewer";
 
 const ProductImageGallery = ({
@@ -10,8 +16,17 @@ const ProductImageGallery = ({
   discountBadge = null,
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [zoomPos, setZoomPos] = useState({ x: 0, y: 0, show: false });
 
-  // Memoized Navigation
+  // --- Logic for Magnifying Glass Effect (Myntra Type) ---
+  const handleMouseMove = (e) => {
+    const { left, top, width, height } =
+      e.currentTarget.getBoundingClientRect();
+    const x = ((e.pageX - left) / width) * 100;
+    const y = ((e.pageY - top) / height) * 100;
+    setZoomPos({ x, y, show: true });
+  };
+
   const handleNavigate = useCallback(
     (direction) => {
       let nextIndex;
@@ -31,80 +46,93 @@ const ProductImageGallery = ({
   );
 
   return (
-    <div className="flex flex-col-reverse md:flex-row gap-4">
-      {/* Thumbnails */}
-      <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto no-scrollbar md:max-h-[600px] pb-2 md:pb-0">
+    <div className="flex flex-col-reverse lg:flex-row gap-4 items-start">
+      {/* 1. MYNTRA THUMBNAIL STRIP */}
+      <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto no-scrollbar lg:max-h-[600px] shrink-0">
         {images.map((img, index) => (
-          <button
+          <div
             key={`${img}-${index}`}
-            onClick={() => onImageChange(index)}
-            className={`relative flex-shrink-0 w-16 h-20 md:w-20 md:h-24 rounded-md overflow-hidden transition-all duration-300 border-2 ${
+            onMouseEnter={() => onImageChange(index)} // Myntra-style hover change
+            className={`relative flex-shrink-0 w-14 h-18 lg:w-20 lg:h-28 cursor-pointer transition-all duration-300 ${
               activeIndex === index
-                ? "border-black shadow-md scale-105"
-                : "border-transparent opacity-60 hover:opacity-100"
+                ? "ring-1 ring-slate-900 shadow-lg"
+                : "opacity-70 hover:opacity-100"
             }`}>
-            <img
-              src={img}
-              alt={`${productName} view ${index + 1}`}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          </button>
+            <img src={img} alt="" className="w-full h-full object-cover" />
+          </div>
         ))}
       </div>
 
-      {/* Main View */}
-      <div className="relative flex-1 group bg-[#F9F9F9] rounded-xl overflow-hidden shadow-sm border border-gray-100">
+      {/* 2. MAIN IMAGE VIEWER (The Stage) */}
+      <div className="relative flex-1 group bg-white border border-slate-100 cursor-zoom-in overflow-hidden">
+        {/* Floating Badge HUD */}
         {discountBadge && (
-          <div className="absolute top-4 left-4 z-10 bg-black text-white px-3 py-1 text-[10px] font-bold tracking-widest uppercase rounded-sm">
+          <div className="absolute top-4 left-4 z-20 bg-[#ff356c] text-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest shadow-xl">
             {discountBadge}
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-sm hover:bg-black hover:text-white transition-all">
-            <Share2 size={18} />
+        {/* Top Right Action HUD */}
+        <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 pointer-events-none group-hover:pointer-events-auto opacity-0 group-hover:opacity-100 transition-all duration-500">
+          <button className="p-3 bg-white border border-slate-100 rounded-full hover:bg-slate-50 transition-colors shadow-sm">
+            <Share2 size={16} className="text-slate-600" />
           </button>
           <button
             onClick={() => setIsFullScreen(true)}
-            className="p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-sm hover:bg-black hover:text-white transition-all">
-            <Maximize2 size={18} />
+            className="p-3 bg-white border border-slate-100 rounded-full hover:bg-slate-50 transition-colors shadow-sm">
+            <Maximize2 size={16} className="text-slate-600" />
           </button>
         </div>
 
-        {/* Image (No Zoom) */}
+        {/* Main Image Canvas with Zoom Engine */}
         <div
-          className="relative w-full h-[500px] md:h-[700px] overflow-hidden cursor-pointer"
+          className="relative w-full aspect-[3/4] lg:h-[750px] overflow-hidden"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => setZoomPos((p) => ({ ...p, show: false }))}
           onClick={() => setIsFullScreen(true)}>
           <img
             src={currentImage}
             alt={productName}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover transition-transform duration-500 ${
+              zoomPos.show ? "scale-150" : "scale-100"
+            }`}
+            style={
+              zoomPos.show
+                ? { transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` }
+                : {}
+            }
           />
         </div>
 
-        {/* Navigation Arrows */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleNavigate("prev");
-          }}
-          className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/80 backdrop-blur-sm rounded-full shadow-lg opacity-0 group-hover:opacity-100 hover:bg-white transition-all duration-300">
-          <ChevronLeft size={20} />
-        </button>
+        {/* Standard Navigation Arrows */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNavigate("prev");
+            }}
+            className="p-3 bg-white/90 shadow-2xl rounded-full hover:bg-white transition-all">
+            <ChevronLeft size={20} strokeWidth={1.5} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNavigate("next");
+            }}
+            className="p-3 bg-white/90 shadow-2xl rounded-full hover:bg-white transition-all">
+            <ChevronRight size={20} strokeWidth={1.5} />
+          </button>
+        </div>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleNavigate("next");
-          }}
-          className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/80 backdrop-blur-sm rounded-full shadow-lg opacity-0 group-hover:opacity-100 hover:bg-white transition-all duration-300">
-          <ChevronRight size={20} />
-        </button>
+        {/* Item Counter HUD */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20">
+          <p className="text-[10px] font-black text-slate-900 tracking-[0.2em]">
+            {activeIndex + 1} / {images.length}
+          </p>
+        </div>
       </div>
 
-      {/* Full Screen Viewer */}
+      {/* 3. FULL SCREEN INTERFACE */}
       {isFullScreen && (
         <FullScreenImageViewer
           images={images}

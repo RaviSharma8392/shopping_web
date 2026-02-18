@@ -1,18 +1,20 @@
 import React, { useMemo } from "react";
 import {
   ShoppingBag,
-  Zap,
   ShieldCheck,
   Heart,
-  Truck,
+  Hash,
   RefreshCcw,
+  Ruler,
+  ChevronRight,
+  Info,
+  Lock,
+  Zap,
 } from "lucide-react";
 import { TrustBadges } from "../badges/TrustBadges";
-import CustomButton from "../button/CustomButton";
 import { ShareSection } from "../section/ShareSectionNew";
 import QuantitySelector from "../../../components/unit/QuantitySelector";
 import { PriceInfo } from "./PriceInfo";
-import ColorSelector from "./ColorSelector";
 import SizeSelector from "../selector/SizeSelector";
 
 const ProductInfo = ({
@@ -20,74 +22,103 @@ const ProductInfo = ({
   discount,
   renderStars,
   formatPrice,
-
   selectedSize,
   setSelectedSize,
   quantity,
-  setQuantity, // Changed from handleQuantityChange to match typical useState setter
+  setQuantity,
   handleAddToCart,
-  handleBuyNow,
   handleWishlistToggle,
-  isWishlisted, // Changed from isLiked to match parent
+  isWishlisted,
   isAdding,
 }) => {
-  // Logic for low stock warning
   const isLowStock = useMemo(
     () => product.stock > 0 && product.stock < 5,
     [product.stock],
   );
 
   return (
-    <div className="space-y-8 font-sans animate-in fade-in slide-in-from-right-4 duration-700">
-      {/* 1. Header & Rating */}
-      <div className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <h1 className="text-2xl md:text-4xl font-serif font-medium text-gray-900 leading-tight">
-            {product.name}
-          </h1>
+    <div className="space-y-10 md:space-y-12 font-sans animate-in fade-in slide-in-from-bottom-6 duration-1000">
+      {/* 1. IDENTITY BLOCK */}
+      <section className="space-y-5">
+        <div className="flex items-start justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <span className="bg-slate-950 text-white text-[8px] font-black px-2 py-0.5 uppercase tracking-[0.2em]">
+                Limited Edition
+              </span>
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#ff356c]">
+                Authorized Archive
+              </p>
+            </div>
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tighter text-slate-950 leading-[0.95]">
+              {product.name}
+              <span className="text-[#ff356c] italic font-serif">.</span>
+            </h1>
+          </div>
+
           <button
             onClick={handleWishlistToggle}
-            className={`p-3 rounded-full border transition-all duration-300 hover:scale-110 active:scale-95 flex-shrink-0 ${
+            className={`group p-4 md:p-5 border transition-all duration-500 active:scale-90 ${
               isWishlisted
-                ? "bg-red-50 border-red-100 text-red-500 shadow-sm"
-                : "bg-white border-gray-100 text-gray-400 hover:text-red-500 hover:border-red-100"
+                ? "bg-slate-950 border-slate-950 text-[#ff356c] shadow-2xl"
+                : "bg-white border-slate-100 text-slate-300 hover:border-slate-950 hover:text-slate-950"
             }`}>
             <Heart
               size={20}
               fill={isWishlisted ? "currentColor" : "none"}
-              strokeWidth={2}
+              className="transition-transform duration-500 group-hover:scale-110"
+              strokeWidth={1.5}
             />
           </button>
         </div>
 
-        <div className="flex items-center gap-4 text-sm">
-          {renderStars(product.rating || 4.5)}
-          <div className="h-4 w-[1px] bg-gray-200" />
-          <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">
-            SKU: {product.sku || "MN-0000"}
-          </span>
+        {/* METADATA HUD */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-1">
+          <div className="flex items-center gap-2">
+            <div className="flex -space-x-1.5">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="w-5 h-5 rounded-full border-2 border-white bg-slate-100"
+                />
+              ))}
+            </div>
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-900 border-b border-[#ff356c]/30">
+              {product.reviewsCount || "142"} Authenticated Reviews
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400">
+            <Hash className="w-3 h-3 text-[#ff356c]" />
+            {product.sku || "MN-9921-X"}
+          </div>
         </div>
 
-        <PriceInfo
-          product={product}
-          discount={discount}
-          formatPrice={formatPrice}
-        />
-      </div>
+        <div className="pt-4">
+          <PriceInfo
+            product={product}
+            discount={discount}
+            formatPrice={formatPrice}
+          />
+        </div>
+      </section>
 
-      <div className="h-[1px] bg-gradient-to-r from-gray-200 via-gray-100 to-transparent" />
+      <div className="h-px bg-slate-100 w-full" />
 
-      {/* 2. Selection Controls */}
-      <div className="space-y-8">
-        {/* Size Selector */}
+      {/* 2. CONFIGURATION ENGINE */}
+      <section className="space-y-10">
+        {/* Size Interface */}
         {product.sizes?.length > 0 && (
-          <div className="space-y-3">
+          <div className="space-y-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-900">
-                Select Size
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-950">
+                Dimension Protocol
               </span>
-              <button className="text-xs text-red-600 font-bold underline decoration-red-200 underline-offset-4 hover:text-red-700">
-                Size Chart
+              <button className="flex items-center gap-2 text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-[#ff356c] transition-colors group">
+                <Ruler
+                  size={13}
+                  className="group-hover:rotate-45 transition-transform duration-500"
+                />
+                Size Guide
               </button>
             </div>
             <SizeSelector
@@ -98,11 +129,11 @@ const ProductInfo = ({
           </div>
         )}
 
-        {/* Quantity & Stock */}
-        <div className="flex items-end gap-8">
+        {/* Stock & Volume HUD */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-slate-50/50 p-5 border border-slate-100 rounded-sm">
           <div className="space-y-3">
-            <label className="text-xs font-bold uppercase tracking-widest text-gray-900 block">
-              Quantity
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-950 block">
+              Unit Acquisition
             </label>
             <QuantitySelector
               quantity={quantity}
@@ -111,79 +142,120 @@ const ProductInfo = ({
             />
           </div>
 
-          {/* Low Stock Indicator */}
-          {isLowStock && (
-            <div className="pb-3 flex items-center gap-2 text-amber-600 animate-pulse">
-              <Zap size={14} fill="currentColor" />
-              <p className="text-xs font-bold">Only {product.stock} left!</p>
+          {isLowStock ? (
+            <div className="flex items-center gap-3 text-[#ff356c] sm:text-right">
+              <div className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff356c] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff356c]"></span>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest">
+                  Scarcity Alert
+                </p>
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
+                  Only {product.stock} pieces remaining
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-emerald-500">
+              <CheckCircle size={12} />
+              <span className="text-[9px] font-black uppercase tracking-widest">
+                Inventory Verified
+              </span>
             </div>
           )}
         </div>
-      </div>
+      </section>
 
-      {/* 3. Primary Actions */}
-      <div className="hidden md:flex flex-col sm:flex-row gap-4 pt-4">
-        <CustomButton
-          text={isAdding ? "Adding..." : "Add to Cart"}
-          icon={<ShoppingBag className="w-5 h-5" strokeWidth={2} />}
-          loading={isAdding}
-          onClick={handleAddToCart}
-          className="flex-1 h-14 rounded-full uppercase text-xs tracking-[0.15em] font-bold shadow-lg shadow-gray-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm"
-          bgColor="#111827" // Tailwind Gray-900
-          textColor="text-white"
-        />
-
-        <CustomButton
-          text="Add to Wishlist"
-          icon={<Zap className="w-5 h-5" strokeWidth={2} />}
-          onClick={handleBuyNow}
-          className="flex-1 h-14 rounded-full uppercase text-xs tracking-[0.15em] font-bold border-2 border-gray-900 hover:bg-gray-50 transition-all duration-300"
-          bgColor="white"
-          textColor="text-gray-900"
-        />
-      </div>
-
-      {/* 4. Secondary Trust & Share */}
-      <div className="pt-8 space-y-6">
-        {/* Mini Features */}
-        {/* <div className="grid grid-cols-2 gap-4 py-6 border-y border-gray-100">
-          <div className="flex items-center gap-3">
-            <Truck size={20} className="text-gray-400" />
-            <div className="flex flex-col">
-              <span className="text-xs font-bold text-gray-900 uppercase">
-                Free Shipping
-              </span>
-              <span className="text-[10px] text-gray-500">
-                On orders over ₹999
-              </span>
+      {/* 3. AUTHORIZATION CORE */}
+      <section className="space-y-6 pt-2">
+        <div className="flex flex-col gap-4">
+          <button
+            disabled={isAdding}
+            onClick={handleAddToCart}
+            className="group relative overflow-hidden w-full bg-slate-950 text-white py-6 md:py-7 text-[11px] font-black uppercase tracking-[0.5em] transition-all duration-500 disabled:opacity-40 flex items-center justify-center gap-4 active:scale-[0.98]">
+            <div className="absolute inset-0 bg-[#ff356c] translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
+            <div className="relative z-10 flex items-center gap-4">
+              {isAdding ? (
+                <RefreshCcw className="animate-spin" size={16} />
+              ) : (
+                <ShoppingBag
+                  size={18}
+                  className="group-hover:-translate-y-0.5 transition-transform"
+                />
+              )}
+              {isAdding ? "Syncing..." : "Authorize Acquisition"}
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <RefreshCcw size={20} className="text-gray-400" />
-            <div className="flex flex-col">
-              <span className="text-xs font-bold text-gray-900 uppercase">
-                Easy Returns
-              </span>
-              <span className="text-[10px] text-gray-500">
-                7-day return policy
-              </span>
-            </div>
-          </div>
-        </div> */}
+          </button>
 
+          <div className="flex items-center justify-center gap-3 opacity-30">
+            <Lock size={10} />
+            <p className="text-[8px] font-black uppercase tracking-widest">
+              Secure Handshake Active
+            </p>
+          </div>
+        </div>
+
+        <p className="text-[9px] text-center text-slate-300 uppercase tracking-widest italic font-serif max-w-[260px] mx-auto leading-relaxed">
+          Crafted in limited runs to preserve architectural integrity.
+        </p>
+      </section>
+
+      {/* 4. UTILITY MANIFEST */}
+      <section className="pt-10 space-y-10 border-t border-slate-50">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
-            Share this product
-          </span>
+          <div className="space-y-1">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-950">
+              Transmit Manifest
+            </span>
+            <p className="text-[8px] text-slate-400 uppercase tracking-widest font-medium">
+              Digital share protocol
+            </p>
+          </div>
           <ShareSection />
         </div>
 
-        <div className="p-5 bg-gray-50 rounded-xl border border-gray-100/50">
-          <TrustBadges />
+        <div className="grid grid-cols-1 gap-px bg-slate-200 border border-slate-200 overflow-hidden rounded-sm">
+          <div className="p-6 bg-white flex items-center gap-5">
+            <ShieldCheck
+              size={20}
+              className="text-[#ff356c]"
+              strokeWidth={1.5}
+            />
+            <div className="space-y-0.5">
+              <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-950">
+                Identity Guarantee
+              </h4>
+              <p className="text-[8px] text-slate-400 uppercase tracking-tighter leading-none">
+                100% Verified Craftsmanship
+              </p>
+            </div>
+          </div>
+          <div className="p-6 bg-white">
+            <TrustBadges />
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
+
+// Simplified CheckCircle for consistency
+const CheckCircle = ({ size, className }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="3"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}>
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+    <polyline points="22 4 12 14.01 9 11.01" />
+  </svg>
+);
 
 export default ProductInfo;

@@ -22,7 +22,7 @@ const SignupPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
+  console.log(step);
   const handleGoogleSignup = async () => {
     setLoading(true);
     setError("");
