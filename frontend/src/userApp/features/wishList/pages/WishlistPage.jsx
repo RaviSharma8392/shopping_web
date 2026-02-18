@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useProducts } from "../../product/hook/useProducts";
-import { useWishlist } from "../../wishlist/context/WishlistContext";
+import { useWishlist } from "../context/WishlistContext";
 import EmptyWishlist from "./EmptyWishlist";
 import MoveToCartPopUp from "../components/pop-up/MoveToCartPopUp";
 import { WishlistCard } from "../components/cards/WishlistCard";
