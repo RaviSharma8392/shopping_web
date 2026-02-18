@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Heart, ShoppingBag, Zap, Check } from "lucide-react";
-import { useWishlist } from "../../features/wishlist/context/WishlistContext";
+import { useWishlist } from "../../features/wishList/context/WishlistContext";
 import { useCart } from "../../features/cart/context/CartContext";
 import { useNavigate } from "react-router-dom";
 import NotificationProduct from "./NotificationProduct";
