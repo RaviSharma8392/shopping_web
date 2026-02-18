@@ -17,7 +17,7 @@ import {
 import ProfileHeader from "../components/section/ProfileHeader";
 import { useAuth } from "../features/auth/context/UserContext";
 import { useCart } from "../features/cart/context/CartContext";
-import { useWishlist } from "../features/wishlist/context/WishlistContext";
+import { useWishlist } from "../features/wishList/context/WishlistContext";
 const ProfilePage = () => {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
